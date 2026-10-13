@@ -1,0 +1,4 @@
+[{"eval":"(()=>{window.__game.setShadows(false);return 1})()"},
+ {"click":"#btnStart"},{"wait":600},
+ {"eval":"BOTJS"},
+ {"eval":"(()=>{const g=window.__game;const t0=performance.now();const r=window.__bot(1500,{every:120,retry:true,human:{react:.35,err:.012,aim:3},pick:true,crouch:true});r.ms=Math.round(performance.now()-t0);r.menu=document.getElementById('menuTitle').textContent;return r})()","log":"regression bot full mission"}]

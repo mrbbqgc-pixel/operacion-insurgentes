@@ -1,0 +1,5 @@
+[{"click":"#btnStart"},{"wait":800},
+ {"eval":"(()=>{const g=window.__game;const ext=g.renderer.getContext().getExtension('WEBGL_lose_context');if(!ext)return 'no ext';ext.loseContext();return 'lost'})()","log":"lose"},
+ {"wait":800},
+ {"eval":"(()=>{const g=window.__game;return [g.G.state,document.getElementById('menuTitle').textContent,document.getElementById('btnStart').textContent,document.getElementById('menu').hidden]})()","log":"after loss"},
+ {"shot":"x_lost"}]

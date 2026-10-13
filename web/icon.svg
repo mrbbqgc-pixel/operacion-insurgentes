@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2b1a10"/>
+      <stop offset=".45" stop-color="#8a3f1c"/>
+      <stop offset=".78" stop-color="#e58a2c"/>
+      <stop offset="1" stop-color="#f3b24a"/>
+    </linearGradient>
+    <radialGradient id="sun" cx=".5" cy=".5" r=".5">
+      <stop offset="0" stop-color="#ffe3a0"/>
+      <stop offset=".7" stop-color="#ffc24f"/>
+      <stop offset="1" stop-color="#ffb23e"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#sky)"/>
+  <g transform="translate(0,-36)">
+  <circle cx="256" cy="318" r="128" fill="url(#sun)"/>
+  <!-- far ridge of the Sierra -->
+  <path d="M0 372 L70 338 L128 356 L190 330 L250 352 L330 326 L400 350 L462 332 L512 352 L512 420 L0 420 Z" fill="#5a2a16" opacity=".85"/>
+  <g fill="#15110c">
+    <!-- ground and low houses -->
+    <rect x="0" y="404" width="512" height="160"/>
+    <rect x="34" y="372" width="74" height="40"/>
+    <rect x="52" y="356" width="30" height="20"/>
+    <rect x="420" y="378" width="70" height="34"/>
+    <!-- parish with twin domed towers -->
+    <rect x="198" y="318" width="116" height="92"/>
+    <path d="M198 318 L256 280 L314 318 Z"/>
+    <rect x="158" y="246" width="50" height="164"/>
+    <rect x="304" y="246" width="50" height="164"/>
+    <path d="M158 248 A25 27 0 0 1 208 248 Z"/>
+    <path d="M304 248 A25 27 0 0 1 354 248 Z"/>
+    <rect x="180" y="196" width="6" height="30"/><rect x="172" y="204" width="22" height="6"/>
+    <rect x="326" y="196" width="6" height="30"/><rect x="318" y="204" width="22" height="6"/>
+    <rect x="253" y="252" width="6" height="32"/><rect x="245" y="260" width="22" height="6"/>
+    <!-- palm -->
+    <path d="M418 410 C420 360 412 300 398 250 L410 247 C426 298 434 360 432 410 Z"/>
+    <path d="M404 250 C380 222 346 220 322 240 C350 236 378 242 400 258 Z"/>
+    <path d="M404 250 C392 214 366 196 336 196 C362 208 384 226 398 254 Z"/>
+    <path d="M404 250 C410 212 434 192 464 192 C440 206 420 226 410 256 Z"/>
+    <path d="M404 250 C430 226 462 226 486 246 C458 240 430 246 408 260 Z"/>
+    <path d="M404 250 C424 252 450 268 462 294 C442 276 420 266 402 262 Z"/>
+    <path d="M404 250 C384 254 362 272 352 298 C370 280 390 268 406 262 Z"/>
+  </g>
+  <!-- lit doorway and belfry openings -->
+  <path d="M244 410 L244 372 A12 12 0 0 1 268 372 L268 410 Z" fill="#ffb23e"/>
+  <rect x="176" y="270" width="14" height="26" rx="7" fill="#e58a2c"/>
+  <rect x="322" y="270" width="14" height="26" rx="7" fill="#e58a2c"/>
+  </g>
+</svg>

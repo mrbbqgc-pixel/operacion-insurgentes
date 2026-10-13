@@ -1,0 +1,2 @@
+[{"wait":1500},{"shot":"h_menu"},
+ {"eval":"(()=>{const g=window.__game,i=g.renderer.info;return ['menu',i.render.calls,i.render.triangles]})()","log":"info"}]

@@ -1,0 +1,6 @@
+[{"shot":"g_menu"},
+ {"click":"#btnStart"},{"wait":1500},
+ {"eval":"(()=>{const g=window.__game;return {state:g.G.state,stage:g.MS.i,foes:g.foes.length,allies:g.allies.length,px:g.P.x,pz:g.P.z,obj:g.OBJ.text,build:g.buildMs}})()","log":"start"},
+ {"wait":2500},{"shot":"g_start"},
+ {"eval":"(()=>{const g=window.__game,P=g.P;g.BOT.on=true;g.sim(30,1/30);const f=g.foes.filter(s=>s.alive&&s.y0<1)[2]||g.foes[0];for(const s of g.foes){s.percT=1e9;}f.aware=true;f.lowered=false;f.wantCrouch=false;P.x=f.x+5;P.z=f.z+1;P.yaw=Math.atan2(-(f.x-P.x),-(f.z-P.z));P.pitch=-.08;f.yaw=P.yaw+Math.PI+.5;f.g.rotation.y=f.yaw;const a=g.allies[0],b=g.allies[1];a.x=f.x+1.2;a.z=f.z-1.5;a.yaw=P.yaw+2.4;a.g.rotation.y=a.yaw;a.percT=1e9;b.percT=1e9;b.x=f.x-1.5;b.z=f.z+2;b.yaw=Math.PI/2;b.g.rotation.y=b.yaw;b.crouch=1;b.wantCrouch=true;for(const s of [f,a,b]){s.g.position.set(s.x,0,s.z);}g.G.state='pause';document.getElementById('menu').hidden=true;g.camera.position.set(P.x,1.5,P.z);g.camera.rotation.set(-.05,P.yaw,0);return [f.kind,f.x,f.z]})()","log":"pose"},
+ {"wait":3000},{"shot":"g_pose"}]

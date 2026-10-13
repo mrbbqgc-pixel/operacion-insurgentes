@@ -1,0 +1,4 @@
+[{"eval":"(()=>{window.__game.setShadows(false);return 1})()"},
+ {"click":"#btnStart"},{"wait":600},
+ {"eval":"BOTJS"},
+ {"eval":"(()=>{const g=window.__game;const out=[];for(let k=0;k<3;k++){g.G.state='play';g.startMission(5);const r=window.__bot(600,{every:60,retry:true,human:{react:.35,err:.012,aim:3},pick:true,crouch:true});out.push([r.state,r.t,r.stage,r.deaths]);}return out})()","log":"plaza x3 (state,t,stage,deaths)"}]

@@ -1,0 +1,9 @@
+[
+ {"eval":"({fonts:[...document.fonts].map(f=>f.family+' '+f.weight+' '+f.status),title:document.title,three:THREE.REVISION,start:document.getElementById('btnStart').textContent,dis:document.getElementById('btnStart').disabled,tip:!!document.getElementById('iosTip'),h1:getComputedStyle(document.querySelector('h1')).fontFamily.slice(0,30),links:document.querySelectorAll('link[rel=stylesheet],script[src]').length})","log":"menu"},
+ {"shot":"w1-menu"},
+ {"click":"#btnStart"},{"wait":600},
+ {"eval":"(()=>{const g=window.__game;g.sim(120,1/30);return {state:g.G.state,stage:g.MS.i,x:Math.round(g.P.x),z:Math.round(g.P.z),foes:g.foes.filter(f=>f.alive).length,fs:!!document.fullscreenElement,lock:!!document.pointerLockElement}})()","log":"play"},
+ {"wait":800},{"shot":"w1-play"},
+ {"key":"Escape"},{"wait":300},
+ {"eval":"({state:window.__game.G.state,menuHidden:document.getElementById('menu').hidden,btn:document.getElementById('btnStart').textContent})","log":"after esc"}
+]

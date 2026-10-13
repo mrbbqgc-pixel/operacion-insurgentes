@@ -1,0 +1,5 @@
+[{"eval":"(()=>{window.__game.setShadows(false);return 1})()"},
+ {"click":"#btnStart"},{"wait":600},
+ {"eval":"BOTJS"},
+ {"eval":"(()=>{const g=window.__game;g.startMission(5);const r=window.__bot(500,{every:60,retry:true,human:{react:.35,err:.012,aim:3},pick:true,crouch:true});return {state:r.state,t:r.t,stage:r.stage,deaths:r.deaths,log:r.log.filter(l=>l[0]==='DEAD'||l[0]==='STAGE')}})()","log":"plaza with belfry"},
+ {"eval":"(()=>{const g=window.__game;g.ST[5].belfry=false;g.G.state='play';g.startMission(5);const r=window.__bot(500,{every:60,retry:true,human:{react:.35,err:.012,aim:3},pick:true,crouch:true});return {state:r.state,t:r.t,stage:r.stage,deaths:r.deaths,log:r.log.filter(l=>l[0]==='DEAD'||l[0]==='STAGE')}})()","log":"plaza without belfry"}]

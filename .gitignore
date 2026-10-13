@@ -1,0 +1,10 @@
+node_modules/
+# build products that are not part of the site
+src/operacion-insurgentes.html
+src/all.js
+src/all-test.js
+src/test-static.html
+# test output
+test/*.png
+test/*.jpg
+test/static.html

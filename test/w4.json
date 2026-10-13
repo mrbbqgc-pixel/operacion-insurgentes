@@ -1,0 +1,5 @@
+[
+ {"eval":"(async()=>{const m=document.querySelector('link[rel=manifest]'),r=await fetch(m.href),j=await r.json();const ic=await Promise.all([...document.querySelectorAll('link[rel=icon],link[rel=\"apple-touch-icon\"]')].map(async l=>{const q=await fetch(l.href);return [l.getAttribute('href'),q.status,q.headers.get('content-type')]}));const pv=await fetch('preview.jpg');return {manifest:[m.href.replace(location.origin,''),r.status,j.name,j.start_url,j.display,j.orientation],icons:ic,preview:[pv.status,pv.headers.get('content-type')],og:document.querySelector('meta[property=\"og:image\"]').content,canon:document.querySelector('link[rel=canonical]').href,fonts:[...document.fonts].filter(f=>f.status==='loaded').length}})()","log":"hosted"},
+ {"click":"#btnStart"},{"wait":500},
+ {"eval":"(()=>{const g=window.__game;g.sim(60,1/30);return {state:g.G.state,foes:g.foes.filter(f=>f.alive).length}})()","log":"play"}
+]

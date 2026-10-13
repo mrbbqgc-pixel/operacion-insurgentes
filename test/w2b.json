@@ -1,0 +1,9 @@
+[
+ {"eval":"(()=>{const t=document.getElementById('iosTip'),r=t.getBoundingClientRect(),c=document.getElementById('card').getBoundingClientRect(),m=document.getElementById('menu');return {tipRect:[Math.round(r.left),Math.round(r.top),Math.round(r.width),Math.round(r.height)],card:[Math.round(c.top),Math.round(c.bottom)],vh:innerHeight,scrollH:m.scrollHeight}})()","log":"390"},
+ {"size":[844,340]},{"wait":400},
+ {"eval":"(()=>{const t=document.getElementById('iosTip'),r=t.getBoundingClientRect(),c=document.getElementById('card').getBoundingClientRect(),m=document.getElementById('menu');return {tipRect:[Math.round(r.left),Math.round(r.top),Math.round(r.width),Math.round(r.height)],card:[Math.round(c.top),Math.round(c.bottom)],vh:innerHeight,scrollH:m.scrollHeight}})()","log":"340"},
+ {"shot":"w2b-340"},
+ {"size":[667,325]},{"wait":400},
+ {"eval":"(()=>{const t=document.getElementById('iosTip'),r=t.getBoundingClientRect(),c=document.getElementById('card').getBoundingClientRect(),m=document.getElementById('menu');return {tipRect:[Math.round(r.left),Math.round(r.top),Math.round(r.width),Math.round(r.height)],card:[Math.round(c.top),Math.round(c.bottom)],vh:innerHeight,scrollH:m.scrollHeight}})()","log":"667x325"},
+ {"shot":"w2b-325"}
+]

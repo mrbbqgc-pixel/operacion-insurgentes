@@ -1,0 +1,10 @@
+[{"tap":"#btnStart"},{"wait":600},
+ {"eval":"BOTJS"},
+ {"eval":"(()=>{const r=window.__bot(34,{every:60,retry:true,human:{react:.35,err:.012,aim:3},pick:true,crouch:true});return [r.t,r.stage,r.deaths]})()","log":"t34"},
+ {"wait":1500},{"shot":"q1"},
+ {"eval":"(()=>{const r=window.__bot(14,{every:60,retry:true,human:{react:.35,err:.012,aim:3},pick:true,crouch:true});return [r.t,r.stage,r.deaths]})()","log":"t48"},
+ {"wait":1500},{"shot":"q2"},
+ {"eval":"(()=>{const r=window.__bot(60,{every:60,retry:true,human:{react:.35,err:.012,aim:3},pick:true,crouch:true});return [r.t,r.stage,r.deaths]})()","log":"t108"},
+ {"wait":1500},{"shot":"q3"},
+ {"eval":"(()=>{const r=window.__bot(90,{every:60,retry:true,human:{react:.35,err:.012,aim:3},pick:true,crouch:true});return [r.t,r.stage,r.deaths]})()","log":"t198"},
+ {"wait":1500},{"shot":"q4"}]

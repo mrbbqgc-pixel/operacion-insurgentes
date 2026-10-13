@@ -1,0 +1,13 @@
+[
+ {"eval":"(()=>{const t=document.getElementById('iosTip'),r=t&&t.getBoundingClientRect(),c=document.getElementById('card').getBoundingClientRect(),m=document.getElementById('menu');return {tip:!!t,tipRect:r&&[Math.round(r.left),Math.round(r.top),Math.round(r.width),Math.round(r.height)],card:[Math.round(c.top),Math.round(c.bottom)],vh:innerHeight,scrollH:m.scrollHeight,clientH:m.clientHeight,touch:document.body.classList.contains('touch'),standalone:navigator.standalone}})()","log":"ios menu"},
+ {"shot":"w2-menu"},
+ {"size":[844,340]},{"wait":500},
+ {"eval":"(()=>{const t=document.getElementById('iosTip'),r=t.getBoundingClientRect(),c=document.getElementById('card').getBoundingClientRect(),m=document.getElementById('menu');return {tipRect:[Math.round(r.left),Math.round(r.top),Math.round(r.width),Math.round(r.height)],card:[Math.round(c.top),Math.round(c.bottom)],vh:innerHeight,scrollH:m.scrollHeight,clientH:m.clientHeight}})()","log":"ios menu 340"},
+ {"shot":"w2-menu340"},
+ {"size":[390,844]},{"wait":500},{"shot":"w2-portrait"},
+ {"size":[844,390]},{"wait":300},
+ {"eval":"window.dispatchEvent(new Event('orientationchange')),1","log":"orientationchange"},{"wait":900},
+ {"tap":"#btnStart"},{"wait":600},
+ {"eval":"(()=>{const g=window.__game;g.sim(90,1/30);const c=document.getElementById('view');return {state:g.G.state,fs:!!document.fullscreenElement,canvas:[c.width,c.height],inner:[innerWidth,innerHeight],hud:!document.getElementById('hud').hidden}})()","log":"ios play"},
+ {"wait":700},{"shot":"w2-play"}
+]

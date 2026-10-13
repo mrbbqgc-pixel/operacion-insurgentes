@@ -1,0 +1,10 @@
+[{"tap":"#btnStart"},{"wait":600},
+ {"eval":"(()=>{const g=window.__game,c=document.getElementById('view');window.__te=(type,el,id,x,y)=>{const t=new Touch({identifier:id,target:el,clientX:x,clientY:y});el.dispatchEvent(new TouchEvent(type,{changedTouches:[t],touches:type==='touchend'?[]:[t],targetTouches:[t],bubbles:true,cancelable:true}));};const P=g.P,z0=P.z,y0=P.yaw;__te('touchstart',c,1,100,300);__te('touchmove',c,1,100,236);g.sim(30,1/30);const moved=z0-P.z,stick=!document.getElementById('stick').hidden;__te('touchstart',c,2,600,200);__te('touchmove',c,2,650,190);const dy=P.yaw-y0,pitch=P.pitch;__te('touchend',c,2,650,190);__te('touchend',c,1,100,236);g.sim(5,1/30);return {moved:+moved.toFixed(2),sprinting:g.IN.sprint,stick,stickHiddenAfter:document.getElementById('stick').hidden,yawDelta:+dy.toFixed(3),pitch:+pitch.toFixed(3)}})()","log":"touch move+look"},
+ {"eval":"(()=>{const g=window.__game,b=document.getElementById('btnFire');const s0=g.G.stats.shots;__te('touchstart',b,5,760,290);g.sim(15,1/30);const s1=g.G.stats.shots,y0=g.P.yaw;__te('touchmove',b,5,790,290);const dy=g.P.yaw-y0;__te('touchend',b,5,790,290);g.sim(5,1/30);return {shots:s1-s0,fireAfter:g.IN.fire,dragLook:+dy.toFixed(3)}})()","log":"touch fire"},
+ {"tap":"#btnAds"},{"tap":"#btnCrouch"},{"tap":"#btnSwap"},
+ {"eval":"(()=>{const g=window.__game;g.sim(30,1/30);return {ads:g.P.wantAds,adsBtnOn:document.getElementById('btnAds').classList.contains('on'),crouch:g.P.crouching,weapon:g.P.slots[g.P.cur].id,useHidden:document.getElementById('btnUse').hidden}})()","log":"touch buttons"},
+ {"tap":"#btnNade"},{"tap":"#btnReload"},{"tap":"#btnJump"},
+ {"eval":"(()=>{const g=window.__game;g.sim(3,1/30);const r={nades:g.P.nades,liveNades:g.nades.length,crouchAfterJump:g.P.crouching};g.sim(120,1/30);r.afterBoomHp=Math.round(g.P.hp);return r})()","log":"touch nade/jump"},
+ {"tap":"#btnPause"},{"wait":300},
+ {"eval":"(()=>[window.__game.G.state,document.getElementById('menuTitle').textContent])()","log":"touch pause"},
+ {"shot":"m_pause"}]

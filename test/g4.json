@@ -1,0 +1,5 @@
+[{"click":"#btnStart"},{"wait":600},
+ {"eval":"(()=>{const g=window.__game;g.clearSoldiers();for(const a of g.allies)a.g.visible=false;g.stageStart(4);g.clearSoldiers();g.G.state='pause';document.getElementById('menu').hidden=true;document.getElementById('hud').hidden=true;g.gunRoot.visible=false;g.camera.fov=60;g.camera.updateProjectionMatrix();g.cam(36,2.4,-470,44,1.6,-478.5);return 1})()"},
+ {"wait":2500},{"shot":"m_jammer"},
+ {"eval":"(()=>{const g=window.__game;g.stageStart(6);g.clearSoldiers();g.G.state='play';g.BOT.on=true;g.MS.prog=.97;g.P.x=240;g.P.z=-590;g.sim(60,1/30);g.G.state='pause';g.cam(244,2.2,-588,256,2,-600);return [g.MS.i,g.MS.prog]})()","log":"heli"},
+ {"wait":2500},{"shot":"m_heli"}]

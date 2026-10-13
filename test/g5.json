@@ -1,0 +1,7 @@
+[{"wait":1500},{"shot":"h_menu"},
+ {"click":"#btnMapMenu"},{"wait":800},
+ {"eval":"(()=>{const c=document.getElementById('bigmap');return c.toDataURL('image/png')})()","log":"MAPURL"},
+ {"shot":"h_mapmenu"},{"click":"#btnMapClose"},
+ {"click":"#btnStart"},{"wait":1200},
+ {"eval":"(()=>{const g=window.__game;g.BOT.on=true;g.P.x=150;g.P.z=-600;g.P.yaw=-1.2;g.sim(40,1/30);return [g.G.state,document.getElementById('area').textContent]})()","log":"area"},
+ {"wait":2500},{"shot":"h_play"}]

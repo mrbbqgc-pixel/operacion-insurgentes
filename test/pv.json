@@ -1,0 +1,7 @@
+[
+ {"eval":"(()=>{for(const q of ['#btns','#opts','#controls','.fine'])for(const e of document.querySelectorAll(q))e.style.display='none';document.getElementById('card').style.maxWidth='620px';document.querySelector('h1').style.fontSize='76px';document.getElementById('menuMsg').style.fontSize='22px';document.querySelector('.eyebrow').style.fontSize='16px';return 1})()"},
+ {"wait":1500},{"shot":"pv-a","jpg":84},
+ {"wait":9000},{"shot":"pv-b","jpg":84},
+ {"wait":9000},{"shot":"pv-c","jpg":84},
+ {"wait":9000},{"shot":"pv-d","jpg":84}
+]

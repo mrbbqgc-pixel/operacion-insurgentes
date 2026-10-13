@@ -1,0 +1,10 @@
+[
+ {"eval":"({tip:!!document.getElementById('iosTip'),touch:document.body.classList.contains('touch'),rf:typeof document.documentElement.requestFullscreen,lock:!!(screen.orientation&&screen.orientation.lock)})","log":"android menu"},
+ {"tap":"#btnStart"},{"wait":900},
+ {"eval":"(()=>{const g=window.__game;g.sim(60,1/30);const c=document.getElementById('view');return {state:g.G.state,fs:!!document.fullscreenElement,fsEl:document.fullscreenElement&&document.fullscreenElement.tagName,canvas:[c.width,c.height],inner:[innerWidth,innerHeight],orient:screen.orientation&&screen.orientation.type}})()","log":"android play"},
+ {"wait":500},{"shot":"w3-play"},
+ {"tap":"#btnPause"},{"wait":400},
+ {"eval":"({state:window.__game.G.state,btn:document.getElementById('btnStart').textContent,fs:!!document.fullscreenElement})","log":"paused"},
+ {"tap":"#btnStart"},{"wait":400},
+ {"eval":"({state:window.__game.G.state,fs:!!document.fullscreenElement})","log":"resumed"}
+]

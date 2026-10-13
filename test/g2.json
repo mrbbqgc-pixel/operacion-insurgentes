@@ -1,0 +1,4 @@
+[{"click":"#btnStart"},{"wait":800},
+ {"eval":"(()=>{const g=window.__game,P=g.P;g.clearSoldiers();for(const a of g.allies)a.g.visible=false;const kinds=['ally','rifle','rush','heavy','mark'];const L=[];kinds.forEach((k,i)=>{const s=g.addSoldier(1,k,-4+i*1.9,470,{yaw:Math.PI+ (i%2?.5:-.4)});s.percT=1e9;s.lowered=i===1;s.crouch=i===2?1:0;s.moveAmt=i===3?1:0;s.ph=1.2;g.animSoldier(s,1);g.animSoldier(s,1);L.push(s);});g.G.state='pause';document.getElementById('menu').hidden=true;document.getElementById('hud').hidden=true;g.gunRoot.visible=false;g.camera.position.set(0,1.35,475.2);g.camera.rotation.set(-.03,0,0);g.camera.fov=50;g.camera.updateProjectionMatrix();return L.length})()","log":"pose"},
+ {"wait":2500},{"shot":"m_soldiers"},
+ {"eval":"(()=>{const g=window.__game;g.camera.position.set(3.2,1.5,468.2);g.camera.rotation.set(-.08,2.6,0);return 1})()"},{"wait":2000},{"shot":"m_soldiers2"}]

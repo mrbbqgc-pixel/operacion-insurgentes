@@ -1,0 +1,180 @@
+<title>Operación Insurgentes</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Stencil+One&family=Saira+Condensed:wght@400;600;700&display=swap">
+<style>
+/* Layout: full-bleed 3D view of the town; HUD pinned to the corners; the menu is a left-aligned briefing card over a live flyover. Single committed look (desert daylight, dark HUD). */
+:root{
+  --ink:#15110c; --bone:#f3e8d3; --sand:#c9a36b; --sun:#ffb23e; --blood:#d8412f; --agave:#86c2a2; --sky:#8ec1e6;
+  --panel:rgba(21,17,12,.72); --rule:rgba(243,232,211,.22);
+  --display:"Saira Stencil One","Impact","Arial Black",sans-serif;
+  --ui:"Saira Condensed","Arial Narrow","Helvetica Neue",Arial,sans-serif;
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{background:var(--ink);color:var(--bone);font-family:var(--ui);font-size:16px;overflow:hidden;
+  touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+button{font-family:var(--ui);color:var(--bone)}
+#view{position:fixed;inset:0;width:100%;height:100%;display:block;background:var(--sand)}
+#hud{position:fixed;inset:0;pointer-events:none;font-variant-numeric:tabular-nums;
+  --sl:env(safe-area-inset-left,0px);--sr:env(safe-area-inset-right,0px);--st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px)}
+#hud b{font-weight:700}
+.lbl{font-size:11px;letter-spacing:.18em;opacity:.78;text-transform:uppercase}
+#leftCol{position:absolute;left:calc(16px + var(--sl));top:calc(12px + var(--st));width:min(250px,42vw);display:flex;flex-direction:column;gap:6px}
+#objPanel{display:flex;flex-direction:column;gap:5px;background:var(--panel);padding:8px 12px;border-left:3px solid var(--sun)}
+#objText{font-size:15px;line-height:1.25;font-weight:600}
+#objBar{height:5px;background:rgba(243,232,211,.16)}#objFill{display:block;height:100%;width:0;background:var(--sun)}
+#squad{display:flex;flex-direction:column;gap:3px;border-top:1px solid var(--rule);padding-top:5px}
+.sq{display:flex;align-items:center;gap:8px;font-size:12px;letter-spacing:.1em}
+.sq span{flex:0 0 52px}.sq div{flex:1;height:4px;background:rgba(243,232,211,.16)}.sq i{display:block;height:100%;background:var(--sky)}
+.sq.down{opacity:.55}.sq.down i{background:var(--blood)}
+#topc{position:absolute;left:50%;top:calc(10px + var(--st));transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:3px}
+#compass{width:min(340px,36vw);height:26px;background:var(--panel)}
+#area{font-size:12px;letter-spacing:.12em;background:var(--panel);padding:1px 8px;white-space:nowrap}
+#tr{position:absolute;right:calc(16px + var(--sr));top:calc(12px + var(--st));display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+#mini{width:118px;height:118px;border-radius:50%;border:2px solid var(--rule);background:var(--panel)}
+.hb{pointer-events:auto;font:700 13px var(--ui);letter-spacing:.12em;background:var(--panel);border:1px solid var(--rule);padding:5px 10px;cursor:pointer}
+#trb{display:flex;gap:6px}
+#bc{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(12px + var(--sb));display:flex;align-items:stretch;gap:2px}
+#bc>div{background:var(--panel);padding:6px 12px}
+#vit{display:flex;flex-direction:column;justify-content:center;gap:4px;min-width:112px}
+#hpRow{display:flex;align-items:center;gap:6px}
+#hpBar{flex:1;height:9px;background:rgba(243,232,211,.16)}#hpFill{display:block;height:100%;width:100%;background:var(--agave)}
+#hpFill.low{background:var(--blood)}
+#stBar{height:3px;background:rgba(243,232,211,.16)}#stFill{display:block;height:100%;width:100%;background:var(--bone)}
+#stance{font-size:11px;letter-spacing:.16em;opacity:.85}
+#wpn{text-align:right;min-width:128px}
+#weapon{font-size:12px;letter-spacing:.16em;opacity:.85}
+#mag{font:400 28px/1 var(--display);color:var(--sun)}#mag.low{color:var(--blood)}
+#res{font-size:15px;margin-left:5px;opacity:.85}
+#nades{font-size:12px;letter-spacing:.12em}
+#feed{display:flex;flex-direction:column;gap:3px;width:max-content;max-width:min(340px,56vw)}
+#feed p{margin:0;background:var(--panel);padding:3px 9px;font-size:14px;line-height:1.25;border-left:2px solid var(--sky)}
+#feed p b{color:var(--sky);letter-spacing:.08em}
+#kills{position:absolute;right:calc(16px + var(--sr));top:44%;display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+#kills p{margin:0;font-size:14px;letter-spacing:.08em;text-shadow:0 1px 2px #000}#kills p b{color:var(--sun)}
+#cross{position:absolute;left:50%;top:50%;width:0;height:0}
+#cross i{position:absolute;background:var(--bone);box-shadow:0 0 2px #000}
+#cross i:nth-child(1),#cross i:nth-child(2){left:-1px;width:2px;height:8px}#cross i:nth-child(3),#cross i:nth-child(4){top:-1px;height:2px;width:8px}
+#cross i:nth-child(5){left:-1px;top:-1px;width:2px;height:2px}
+#hit{position:absolute;left:50%;top:50%;width:24px;height:24px;margin:-12px 0 0 -12px;opacity:0;
+  background:linear-gradient(45deg,transparent 46%,var(--bone) 46% 54%,transparent 54%),linear-gradient(-45deg,transparent 46%,var(--bone) 46% 54%,transparent 54%)}
+#hit.on{opacity:1}
+#hit.kill{background:linear-gradient(45deg,transparent 44%,var(--blood) 44% 56%,transparent 56%),linear-gradient(-45deg,transparent 44%,var(--blood) 44% 56%,transparent 56%)}
+#dmg{position:absolute;left:50%;top:50%;width:0;height:0}
+#dmg i{position:absolute;left:-70px;top:-150px;width:140px;height:26px;opacity:0;transform-origin:70px 150px;
+  background:radial-gradient(ellipse at 50% 100%,rgba(216,65,47,.95) 0%,rgba(216,65,47,0) 70%)}
+#vig{position:absolute;inset:0;opacity:0;background:radial-gradient(ellipse at center,transparent 42%,rgba(216,65,47,.78) 100%)}
+#flash{position:absolute;inset:0;opacity:0;background:#fff}
+#scope{position:absolute;inset:0;background:radial-gradient(circle at center,transparent 0,transparent 34vmin,#000 34.6vmin)}
+#scope::before,#scope::after{content:"";position:absolute;background:#000}
+#scope::before{left:50%;top:calc(50% - 34vmin);width:1px;height:68vmin}#scope::after{top:50%;left:calc(50% - 34vmin);height:1px;width:68vmin}
+#prompt{position:absolute;left:50%;top:60%;transform:translateX(-50%);background:var(--panel);padding:4px 12px;font-size:15px;letter-spacing:.06em;white-space:nowrap}
+#prompt b{color:var(--sun)}
+#nade{position:absolute;left:50%;top:50%;width:0;height:0}
+#nade i{position:absolute;left:-13px;top:-104px;width:26px;height:26px;border-radius:50%;border:2px solid var(--blood);background:var(--panel);transform-origin:13px 104px;
+  font:700 13px/22px var(--ui);text-align:center;font-style:normal;color:var(--blood)}
+#wp{position:absolute;left:0;top:0;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:1px;font-size:12px;letter-spacing:.08em;text-shadow:0 1px 2px #000}
+#wp i{width:12px;height:12px;background:var(--sun);transform:rotate(45deg);box-shadow:0 0 0 2px rgba(21,17,12,.7)}
+#banner{position:absolute;left:0;right:0;top:20%;text-align:center;opacity:0;transition:opacity .4s;padding-inline:16px}
+#banner.on{opacity:1}
+#banT{display:block;font:400 clamp(26px,6.4vw,50px)/1.05 var(--display);letter-spacing:.04em;text-shadow:0 2px 0 rgba(0,0,0,.55)}
+#banS{display:inline-block;margin-top:6px;font-size:15px;letter-spacing:.16em;background:var(--panel);padding:2px 10px}
+.tb,#stick{display:none}
+body.touch .tb{display:block;position:absolute;pointer-events:auto;border-radius:50%;border:2px solid rgba(243,232,211,.5);
+  background:rgba(21,17,12,.42);color:var(--bone);font:700 11px var(--ui);letter-spacing:.08em;-webkit-tap-highlight-color:transparent;padding:0}
+body.touch .tb.on{background:rgba(255,178,62,.5)}
+#btnFire{right:calc(22px + var(--sr));bottom:calc(64px + var(--sb));width:82px;height:82px;border-color:var(--sun)!important;font-size:14px!important}
+#btnAds{right:calc(116px + var(--sr));bottom:calc(30px + var(--sb));width:60px;height:60px}
+#btnReload{right:calc(120px + var(--sr));bottom:calc(104px + var(--sb));width:52px;height:52px}
+#btnJump{right:calc(28px + var(--sr));bottom:calc(154px + var(--sb));width:52px;height:52px}
+#btnCrouch{right:calc(90px + var(--sr));bottom:calc(160px + var(--sb));width:50px;height:50px}
+#btnNade{right:calc(186px + var(--sr));bottom:calc(40px + var(--sb));width:50px;height:50px}
+#btnSwap{right:calc(184px + var(--sr));bottom:calc(104px + var(--sb));width:50px;height:50px}
+#btnUse{right:calc(150px + var(--sr));bottom:calc(176px + var(--sb));width:auto;height:44px;border-radius:22px!important;padding:0 16px!important;border-color:var(--sun)!important;font-size:13px!important}
+body.touch #stick{display:block;position:absolute;width:112px;height:112px;margin:-56px 0 0 -56px;border-radius:50%;
+  border:2px solid rgba(243,232,211,.4);background:rgba(21,17,12,.28)}
+#knob{position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;background:rgba(243,232,211,.6)}
+body.touch #bc{bottom:calc(6px + var(--sb))}
+.over{position:fixed;inset:0;display:flex;overflow-y:auto;padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px))}
+#menu{align-items:center;justify-content:flex-start;background:linear-gradient(90deg,rgba(21,17,12,.86) 0%,rgba(21,17,12,.55) 55%,rgba(21,17,12,.1) 100%)}
+#card{max-width:480px;min-width:0;margin-left:clamp(0px,5vw,64px);display:flex;flex-direction:column;gap:13px;align-items:flex-start;margin-block:auto}
+.eyebrow{margin:0;font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:var(--sun)}
+h1{margin:0;font:400 clamp(36px,8.6vw,64px)/.95 var(--display);letter-spacing:.02em;text-wrap:balance;text-transform:uppercase}
+#menuMsg{margin:0;font-size:17px;line-height:1.4;max-width:44ch}
+#menuStats{margin:0;display:flex;gap:20px;flex-wrap:wrap}
+#menuStats div{display:flex;flex-direction:column}
+#menuStats dt{font-size:11px;letter-spacing:.16em;text-transform:uppercase;opacity:.75}
+#menuStats dd{margin:0;font:400 26px/1.1 var(--display);color:var(--sun)}
+#btns{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.cta{font:400 21px var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--ink);background:var(--sun);
+  border:0;padding:11px 24px;cursor:pointer;clip-path:polygon(0 0,100% 0,calc(100% - 12px) 100%,0 100%)}
+.cta:hover{background:var(--bone)}
+.cta:disabled{background:rgba(243,232,211,.35);cursor:progress}
+.alt{font:700 15px var(--ui);letter-spacing:.14em;text-transform:uppercase;background:transparent;border:1px solid var(--rule);padding:10px 16px;cursor:pointer}
+.alt:hover{border-color:var(--bone)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--bone);outline-offset:3px}
+#opts{display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center;font-size:14px;letter-spacing:.08em;border-top:1px solid var(--rule);padding-top:10px;width:100%}
+#opts label{display:flex;align-items:center;gap:8px}
+#opts input[type=range]{width:110px;accent-color:var(--sun)}
+#opts input[type=checkbox]{accent-color:var(--sun);width:16px;height:16px}
+#opts select{font:600 14px var(--ui);letter-spacing:.06em;color:var(--bone);background:var(--ink);border:1px solid var(--rule);padding:4px 6px}
+#controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px 24px;width:100%}
+#controls h2{margin:0 0 3px;font:700 12px var(--ui);letter-spacing:.18em;text-transform:uppercase;color:var(--agave)}
+#controls p{margin:0;font-size:14px;line-height:1.42}
+.fine{margin:0;font-size:12.5px;line-height:1.4;opacity:.74;max-width:56ch}
+#mapOver{background:rgba(21,17,12,.96);flex-direction:column;align-items:center;gap:10px;z-index:5}
+#mapWrap{width:min(100%,900px);overflow:auto;touch-action:pan-x pan-y;border:1px solid var(--rule);flex:0 1 auto;min-height:0}
+#mapHead{display:flex;justify-content:space-between;align-items:center;gap:12px;width:min(100%,900px)}
+#mapHead h2{margin:0;font:400 22px var(--display);letter-spacing:.06em;text-transform:uppercase}
+#bigmap{display:block;width:max(100%,780px);height:auto}
+#mapNote{margin:0;font-size:13px;opacity:.8;max-width:900px}
+@media (max-height:440px){#card{gap:8px}h1{font-size:32px}#menuMsg{font-size:14.5px}#controls{display:none}.fine{display:none}}
+@media (max-width:560px){#kills{top:36%}#leftCol{width:min(210px,50vw)}#compass{width:30vw}#area{display:none}}
+@media (max-height:440px){#mini{width:92px;height:92px}#objText{font-size:14px}#feed p{font-size:13px}}
+</style>
+<canvas id="view"></canvas>
+<div id="hud" hidden>
+  <div id="leftCol"><div id="objPanel"><span class="lbl">Objective</span><div id="objText"></div><div id="objBar"><i id="objFill"></i></div><div id="squad"></div></div><div id="feed"></div></div>
+  <div id="topc"><canvas id="compass" width="680" height="52"></canvas><div id="area"></div></div>
+  <div id="tr"><canvas id="mini" width="236" height="236"></canvas><div id="trb"><button class="hb" id="btnMap" type="button">MAP</button><button class="hb" id="btnPause" type="button">PAUSE</button></div></div>
+  <div id="kills"></div>
+  <div id="bc">
+    <div id="vit"><div id="hpRow"><span class="lbl">HP</span><div id="hpBar"><i id="hpFill"></i></div></div><div id="stBar"><i id="stFill"></i></div><div id="stance">STANDING</div></div>
+    <div id="wpn"><div id="weapon">M4</div><div><b id="mag">30</b><span id="res">/ 150</span></div><div id="nades">GRENADES 3</div></div>
+  </div>
+  <div id="cross"><i></i><i></i><i></i><i></i><i></i></div><div id="hit"></div><div id="dmg"><i></i><i></i><i></i></div><div id="nade"></div>
+  <div id="vig"></div><div id="scope" hidden></div><div id="flash"></div>
+  <div id="wp" hidden><i></i><span id="wpD"></span></div>
+  <div id="prompt" hidden></div>
+  <div id="banner"><b id="banT"></b><span id="banS"></span></div>
+  <div id="stick" hidden><i id="knob"></i></div>
+  <button class="tb" id="btnFire" type="button">FIRE</button><button class="tb" id="btnAds" type="button">AIM</button>
+  <button class="tb" id="btnReload" type="button">RELOAD</button><button class="tb" id="btnJump" type="button">JUMP</button>
+  <button class="tb" id="btnCrouch" type="button">CROUCH</button><button class="tb" id="btnNade" type="button">NADE</button>
+  <button class="tb" id="btnSwap" type="button">SWAP</button><button class="tb" id="btnUse" type="button" hidden>USE</button>
+</div>
+<div id="mapOver" class="over" hidden>
+  <div id="mapHead"><h2>Ciudad Insurgentes</h2><button class="alt" id="btnMapClose" type="button">Close map</button></div>
+  <div id="mapWrap"><canvas id="bigmap" width="16" height="16"></canvas></div>
+  <p id="mapNote">Drawn at about 60% of real size. Up is north-northwest, the direction Blvd. Benito Juárez runs. Street lines and names follow the real grid; named landmarks sit on their real blocks. The stadium, the water tower and the cotton gin are placed by guess, and houses and shops are generated.</p>
+</div>
+<div id="menu" class="over">
+  <div id="card">
+    <p class="eyebrow">Ciudad Insurgentes · Comondú · Baja California Sur</p>
+    <h1 id="menuTitle">Operación Insurgentes</h1>
+    <p id="menuMsg">A mercenary force has seized the town and the crossroads where Highway 1 turns east for Loreto. Lead fireteam Halcón up Blvd. Benito Juárez, take the Glorieta, and clear the Plaza Principal.</p>
+    <dl id="menuStats" hidden></dl>
+    <div id="btns"><button class="cta" id="btnStart" type="button" disabled>Building the town…</button><button class="alt" id="btnSurvival" type="button" hidden>Survival</button><button class="alt" id="btnMapMenu" type="button" hidden>Town map</button><button class="alt" id="btnQuit" type="button" hidden>Quit to menu</button></div>
+    <div id="opts">
+      <label for="optSens">Look speed <input type="range" id="optSens" min="40" max="200" value="100"></label>
+      <label for="optSnd"><input type="checkbox" id="optSnd" checked> Sound</label>
+      <label for="optShadow"><input type="checkbox" id="optShadow"> Shadows</label>
+      <label for="optDiff">Difficulty <select id="optDiff"><option value="0">Recruit</option><option value="1">Regular</option><option value="2">Veteran</option></select></label>
+    </div>
+    <div id="controls">
+      <div><h2>Keyboard and mouse</h2><p>WASD move, Shift sprint, C crouch, Space jump. Left click fire, right click aim. R reload, Q swap, G grenade, V knife, F pick up or use, M map, Esc pause.</p></div>
+      <div><h2>Phone or tablet</h2><p>Left thumb moves, right thumb aims. Push the stick all the way forward to sprint. FIRE can be dragged to keep aiming, and it fires by itself when your sights are on a hostile. Turn the phone sideways.</p></div>
+    </div>
+    <p class="fine">The street grid, street names and landmarks follow the real town at about 60% scale: Blvd. Benito Juárez, the Glorieta, the Plaza Principal, the parish, schools, clinics, churches and the Panteón Municipal sit on their real blocks (place data: Google Maps). Houses and shops are generated. The enemy force is fictional.</p>
+  </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>

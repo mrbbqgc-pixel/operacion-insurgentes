@@ -1,0 +1,12 @@
+[{"eval":"(()=>{const g=window.__game;return {touch:document.body.classList.contains('touch'),far:g.Q.far,shadows:g.Q.shadows,pr:g.Q.pr,build:g.buildMs,chunks:g.chunkMeshes.length,mem:(performance.memory||{}).usedJSHeapSize}})()","log":"config"},
+ {"tap":"#btnStart"},{"wait":2500},
+ {"eval":"(()=>{const g=window.__game,i=g.renderer.info;return ['spawn',i.render.calls,i.render.triangles,i.memory.geometries,i.memory.textures]})()","log":"info"},
+ {"shot":"p_spawn"},
+ {"eval":"(()=>{const g=window.__game;g.BOT.on=true;g.P.x=2;g.P.z=30;g.P.yaw=0;g.P.pitch=0;g.sim(5,1/30);return 1})()"},{"wait":2500},
+ {"eval":"(()=>{const g=window.__game,i=g.renderer.info;return ['glorieta north',i.render.calls,i.render.triangles]})()","log":"info"},
+ {"eval":"(()=>{const g=window.__game;g.P.x=160;g.P.z=-560;g.P.yaw=-.5;g.sim(5,1/30);return 1})()"},{"wait":2500},
+ {"eval":"(()=>{const g=window.__game,i=g.renderer.info;return ['plaza',i.render.calls,i.render.triangles]})()","log":"info"},
+ {"shot":"p_plaza"},
+ {"eval":"(()=>{const g=window.__game;g.P.x=0;g.P.z=-300;g.P.yaw=3.14;g.sim(5,1/30);return 1})()"},{"wait":2500},
+ {"eval":"(()=>{const g=window.__game,i=g.renderer.info;return ['boulevard south',i.render.calls,i.render.triangles]})()","log":"info"},
+ {"eval":"(()=>{const g=window.__game;const t0=performance.now();g.sim(600,1/30);return ['sim ms/step',(performance.now()-t0)/600]})()","log":"sim"}]

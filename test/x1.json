@@ -1,0 +1,7 @@
+[{"click":"#btnStart"},{"wait":600},
+ {"eval":"(()=>{const g=window.__game,P=g.P;g.clearSoldiers();g.BOT.on=true;const c=g.cars.find(c=>Math.hypot(c.ref.x-0,c.ref.z-400)<140&&Math.abs(c.ref.x)<12);P.x=c.ref.x+9;P.z=c.ref.z+7;P.yaw=Math.atan2(-(c.ref.x-P.x),-(c.ref.z-P.z));P.pitch=-.1;g.sim(10,1/30);window.__c=c;return [c.ref.type,c.ref.x,c.ref.z,c.hp]})()","log":"car"},
+ {"wait":2000},{"shot":"x_car"},
+ {"eval":"(()=>{const g=window.__game,c=window.__c;g.explode(c.ref.x,1,c.ref.z,5,400,true);g.sim(40,1/30);return [c.hp,g.P.hp]})()","log":"boom"},
+ {"wait":2500},{"shot":"x_wreck"},
+ {"eval":"(()=>{const g=window.__game,P=g.P;P.x=20;P.z=262;P.yaw=1.2;P.pitch=-.05;g.sim(5,1/30);const pumps=g.colliders.filter(c=>c.kind===4&&!c.off).length,barrels=g.colliders.filter(c=>c.kind===3&&!c.off).length;g.explode(24,1,254,9,300,true);g.sim(90,1/30);return [pumps,barrels,g.colliders.filter(c=>c.kind===4&&!c.off).length,g.colliders.filter(c=>c.kind===3&&!c.off).length,P.hp,g.G.state]})()","log":"pumps before/after"},
+ {"wait":2500},{"shot":"x_gasboom"}]

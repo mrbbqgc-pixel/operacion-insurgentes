@@ -13,6 +13,10 @@ A first-person shooter set in Ciudad Insurgentes, Baja California Sur, that runs
 
 The street grid, street names and landmarks follow the real town at about 60% scale (place data: Google Maps). Houses and shops are generated, and a few landmarks are placed by guess. The enemy force is fictional.
 
+## Building
+
+The game's source is in `src/`. `sh build.sh` rebuilds `index.html`; `git push origin main main:gh-pages` publishes it. `CLAUDE.md` has the details and the tests.
+
 ## Credits
 
-Built with [three.js](https://threejs.org/) r128 (MIT licence). Fonts: Saira Stencil One and Saira Condensed (SIL Open Font Licence 1.1).
+Built with [three.js](https://threejs.org/) r128 (MIT licence). Fonts: Saira Stencil One and Saira Condensed (SIL Open Font Licence 1.1). Licence texts are in `web/vendor/`.
