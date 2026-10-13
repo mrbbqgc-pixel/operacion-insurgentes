@@ -24,7 +24,7 @@ function netTx(c,msg){try{if(c&&c.open)c.send(msg);}catch(e){}}
 // host: open a room under a fresh code (another code is tried if the first one is taken)
 function netHost(){netClose();NET.host=true;NET.state='opening';NET.tries=0;netHostTry();}
 function netHostTry(){const code=netCode(),p=new window.Peer(netId(code),netOpts());NET.peer=p;NET.code=code;
-  p.on('open',()=>{if(NET.peer!==p)return;NET.state='open';if(NET.onOpen)NET.onOpen();});
+  p.on('open',()=>{if(NET.peer!==p||NET.state!=='opening')return;NET.state='open';if(NET.onOpen)NET.onOpen();}); // 'open' fires again after every reconnect to the broker
   p.on('connection',c=>{if(NET.peer!==p)return;
     c.on('data',d=>{if(NET.peer===p&&NET.onData)NET.onData(c,d);});
     c.on('close',()=>{if(NET.peer===p&&NET.onGone)NET.onGone(c);});

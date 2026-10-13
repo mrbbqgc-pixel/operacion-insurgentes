@@ -24,9 +24,9 @@ function vsSpawnPoint(first){const A=arena(),cx=(A.x0+A.x1)/2,cz=(A.z0+A.z1)/2,L
 function vsSpawn(first){const A=arena(),p=vsSpawnPoint(first),me=mpMe();plReset();giveClass(me?me.cls:0);P.x=p[0];P.z=p[1];P.y=0;P.yaw=Math.atan2(-((A.x0+A.x1)/2-p[0]),-((A.z0+A.z1)/2-p[1]));
   P.spawnT=2.5;P.lastBy=0;P.lastT=-99;MP.oobT=0;pushOut(P,.45,0);camera.rotation.z=0;}
 function vsBegin(X){G.mode='versus';resetWorldState();removeJammer(false);for(const a of allies)removeSoldier(a);allies.length=0;MS.st=null;MS.i=-1;MS.surv=null;
-  G.dmgK=1;G.score=0;G.stats={kills:0,heads:0,shots:0,hits:0,deaths:0,time:0};MP.tLeft=X&&X.t>0?X.t:MP.cfg.mins*60;MP.spots=arenaSpots();MP.sweepT=14;OBJ.show=false;
+  G.dmgK=1;G.score=0;G.stats={kills:0,heads:0,shots:0,hits:0,deaths:0,time:0};MP.tLeft=X&&X.t>0?X.t:MP.cfg.mins*60;if(X&&Array.isArray(X.tk)){MP.tk[1]=X.tk[0]|0;MP.tk[2]=X.tk[1]|0;}MP.spots=arenaSpots();MP.sweepT=14;OBJ.show=false;
   vsSpawn(!(X&&X.late));banner(arena().n.toUpperCase(),(mpMode().teams?'TWO TEAMS':'FREE-FOR-ALL')+' · FIRST TO '+MP.cfg.kills);}
-function vsTeamKills(t){let n=0;for(const p of MP.players.values())if(p.team===t)n+=p.k;return n;}
+const vsTeamKills=t=>MP.tk[t]|0; // kept apart from the players' own counts, so a team keeps the kills of someone who left
 function vsTick(dt,raw){const A=arena();
   if(P.alive){if(P.x<A.x0||P.x>A.x1||P.z<A.z0||P.z>A.z1){MP.oobT+=dt;G.prompt='Leaving the battle. Turn back: <b>'+Math.max(0,Math.ceil(6-MP.oobT))+'</b>';
       if(MP.oobT>6){P.lastBy=0;P.lastT=-99;P.spawnT=0;hurt(999,P.x,P.z);}}else MP.oobT=0;}
@@ -41,15 +41,15 @@ function vsTick(dt,raw){const A=arena();
 function vsRows(){const rows=Array.from(MP.players.values(),p=>[p.name,p.k,p.d,p.team,p.id]);rows.sort((a,b)=>b[1]-a[1]||a[2]-b[2]);return rows;}
 function vsCheck(){if(!MP.host||MP.phase!=='play'||!mpMode().vs)return;const K=MP.cfg.kills;
   if(mpMode().teams){if(vsTeamKills(1)>=K||vsTeamKills(2)>=K)vsEnd();}else for(const p of MP.players.values())if(p.k>=K){vsEnd();return;}}
-function vsEnd(){if(!MP.host||MP.phase!=='play')return;MP.phase='end';const rows=vsRows();let title;
+function vsEnd(){if(!MP.host||MP.phase!=='play')return;MP.phase='end';MP.ended=MP.round;const rows=vsRows();let title;
   if(mpMode().teams){const a=vsTeamKills(1),b=vsTeamKills(2);title=a===b?'Draw':'Team '+(a>b?1:2)+' wins';}
   else title=rows.length>1&&rows[0][1]===rows[1][1]?'Draw':rows[0][0]+' wins';
-  const Rr={title,rows,teams:!!mpMode().teams};for(const pl of MP.players.values())netTx(pl.conn,['end',Rr,MP.round]);mpBroadcastLobby();mpShowEnd(Rr);}
+  const Rr={title,rows,teams:!!mpMode().teams,tk:[vsTeamKills(1),vsTeamKills(2)]};for(const pl of MP.players.values())netTx(pl.conn,['end',Rr,MP.round]);mpBroadcastLobby();mpShowEnd(Rr);}
 
 // ---------- hooks the session layer calls; the co-op modes add to these in their own file
-function mpStartExtra(){return mpMode().vs?{t:MP.cfg.mins*60}:coStartExtra();}
+function mpStartExtra(){const X=mpMode().vs?{t:MP.cfg.mins*60}:coStartExtra();X.props=blownList();return X;}
 function mpLateJoin(pl){if(mpMode().coop){for(const a of allies)removeSoldier(a);allies.length=0;} // the AI squad makes way for a second player
-  const X=mpMode().vs?{t:MP.tLeft,late:1}:coStartExtra(true);netTx(pl.conn,['start',mpLobby(),X]);}
+  const X=mpMode().vs?{t:MP.tLeft,late:1,tk:[MP.tk[1],MP.tk[2]]}:coStartExtra(true);X.props=blownList();netTx(pl.conn,['start',mpLobby(),X]);}
 function mpAfterDeath(){if(mpMode().vs)vsCheck();else coAfterDeath();}
 function mpAfterLeave(){if(mpMode().vs){let n=0;for(const p of MP.players.values())n++;if(n<2&&MP.phase==='play'){killFeed('','Everyone else has left');}}}
 function mpSnapExtra(m){if(mpMode().coop)coSnap(m);}

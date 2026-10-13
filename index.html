@@ -146,7 +146,7 @@ h1{margin:0;font:400 clamp(36px,8.6vw,64px)/.95 var(--display);letter-spacing:.0
 .alt:hover{border-color:var(--bone)}
 button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--bone);outline-offset:3px}
 #opts{display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center;font-size:14px;letter-spacing:.08em;border-top:1px solid var(--rule);padding-top:10px;width:100%}
-#opts label{display:flex;align-items:center;gap:8px}
+#opts label{display:flex;align-items:center;gap:8px}#opts label[hidden]{display:none}
 #opts input[type=range]{width:110px;accent-color:var(--sun)}
 #opts input[type=checkbox]{accent-color:var(--sun);width:16px;height:16px}
 #opts select{font:600 14px var(--ui);letter-spacing:.06em;color:var(--bone);background:var(--ink);border:1px solid var(--rule);padding:4px 6px}
@@ -176,8 +176,9 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 #mpUi select{font:600 14px var(--ui);letter-spacing:.06em;color:var(--bone);background:var(--ink);border:1px solid var(--rule);padding:4px 6px;max-width:230px}
 #mpUi select:disabled{opacity:.75}
 #mpList{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:3px 6px;width:100%}
-#mpList li{display:flex;justify-content:space-between;gap:10px;background:var(--panel);padding:4px 10px;font-size:15px;border-left:3px solid var(--rule)}
-#mpList li span{opacity:.8;font-size:13px;letter-spacing:.08em}
+#mpList li{display:flex;justify-content:space-between;align-items:baseline;gap:10px;background:var(--panel);padding:4px 10px;font-size:15px;border-left:3px solid var(--rule);min-width:0}
+#mpList li b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#mpList li span{opacity:.8;font-size:13px;letter-spacing:.08em;white-space:nowrap}
 #mpList li.t1{border-left-color:var(--sky)}#mpList li.t2{border-left-color:var(--blood)}#mpList li.me b{color:var(--sun)}
 #mpMsg{margin:0;font-size:14.5px;line-height:1.35;max-width:44ch;color:var(--sun)}#mpMsg:empty{display:none}
 #mpBoard{display:flex;flex-direction:column;gap:2px;border-top:1px solid var(--rule);padding-top:5px;font-size:12px;letter-spacing:.08em}
@@ -187,7 +188,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 #mpBoard .t2 span:first-child::before{background:var(--blood)}
 #card.mp>#menuMsg,#card.mp>#btns,#card.mp>#opts,#card.mp>#controls,#card.mp>.fine,#card.mp>#menuStats,#card.mp>.tip{display:none}
 @media (max-height:440px){#card{gap:8px}h1{font-size:32px}#menuMsg{font-size:14.5px}#controls{display:none}.fine{display:none}}
-@media (max-height:440px){#card.mp .eyebrow{display:none}#card.mp h1{font-size:24px}#mpUi,#mpHome,#mpLobby{gap:8px}#mpCodeBig{font-size:26px}}
+@media (max-height:440px){#card.mp .eyebrow{display:none}#card.mp h1{font-size:24px}#card.mp.room h1{display:none}#mpUi,#mpHome,#mpLobby{gap:8px}#mpCodeBig{font-size:26px}#mpCfg{gap:6px 16px;padding-top:8px}#mpList li{padding:2px 10px}}
 @media (max-height:440px){#card{max-width:640px}#btns{gap:8px}.alt{padding:9px 12px}}
 @media (max-width:560px){#kills{top:36%}#leftCol{width:min(210px,50vw)}#compass{width:30vw}#area{display:none}}
 @media (max-height:440px){#mini{width:92px;height:92px}#objText{font-size:14px}#feed p{font-size:13px}}
@@ -230,9 +231,9 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
     <div id="btns"><button class="cta" id="btnStart" type="button" disabled>Building the town…</button><button class="alt" id="btnSurvival" type="button" hidden>Survival</button><button class="alt" id="btnMp" type="button" hidden>Multiplayer</button><button class="alt" id="btnMapMenu" type="button" hidden>Town map</button><button class="alt" id="btnQuit" type="button" hidden>Quit to menu</button></div>
     <div id="mpUi" hidden>
       <div id="mpHome">
-        <label class="mpf" for="mpName">Your name <input id="mpName" type="text" maxlength="12" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="PLAYER"></label>
+        <label class="mpf" for="mpName">Your name <input id="mpName" type="text" maxlength="12" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" placeholder="PLAYER"></label>
         <div class="mprow" id="mpCreateRow"><button class="cta" id="btnMpCreate" type="button">Create a game</button></div>
-        <div class="mprow"><label class="mpf" for="mpCode">Room code <input id="mpCode" type="text" maxlength="5" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABCDE"></label><button class="alt" id="btnMpJoin" type="button">Join</button></div>
+        <div class="mprow"><label class="mpf" for="mpCode">Room code <input id="mpCode" type="text" maxlength="5" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" placeholder="ABCDE"></label><button class="alt" id="btnMpJoin" type="button">Join</button></div>
         <p class="fine" id="mpHow" style="display:block">One player creates a game and sends the invite link or the room code to the others. Up to 8 players, on phones and computers together.</p>
       </div>
       <div id="mpLobby" hidden>
@@ -256,7 +257,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
       <label for="optSens">Look speed <input type="range" id="optSens" min="40" max="200" value="100"></label>
       <label for="optSnd"><input type="checkbox" id="optSnd" checked> Sound</label>
       <label for="optShadow"><input type="checkbox" id="optShadow"> Shadows</label>
-      <label for="optDiff">Difficulty <select id="optDiff"><option value="0">Recruit</option><option value="1">Regular</option><option value="2">Veteran</option></select></label>
+      <label for="optDiff" id="lOptDiff">Difficulty <select id="optDiff"><option value="0">Recruit</option><option value="1">Regular</option><option value="2">Veteran</option></select></label>
     </div>
     <div id="controls">
       <div><h2>Keyboard and mouse</h2><p>WASD move, Shift sprint, C crouch, Space jump. Left click fire, right click aim. R reload, Q swap, G grenade, V knife, F pick up or use, M map, Esc pause.</p></div>
@@ -295,7 +296,7 @@ function rnd(){seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;}
 const rr=(a,b)=>a+rnd()*(b-a),pick=a=>a[Math.floor(rnd()*a.length)];
 const R=Math.random,R2=(a,b)=>a+R()*(b-a),RP=a=>a[Math.floor(R()*a.length)];
 const clamp=(v,a,b)=>v<a?a:v>b?b:v,lerp=(a,b,t)=>a+(b-a)*t;
-function angDiff(a,b){let d=a-b;while(d>PI)d-=TAU;while(d<-PI)d+=TAU;return d;}
+function angDiff(a,b){let d=a-b;if(d>64||d<-64)d-=TAU*Math.round(d/TAU);while(d>PI)d-=TAU;while(d<-PI)d+=TAU;return d;}
 
 const canvas=$('view');
 let renderer;
@@ -1639,6 +1640,9 @@ function damageProp(c,dmg){if(!c||!(c.hp>0))return;c.hp-=dmg;if(c.hp<=0){c.hp=0;
 function blowProp(c,rep,owner){const x=(c.x0+c.x1)/2,z=(c.z0+c.z1)/2;if(c.off||c.wrecked)return;c.hp=0;if(MP.on&&!rep)mpEvent('pb',0,[c.id]);
   if(c.kind===3||c.kind===4){c.off=true;if(c.ref)scene.remove(c.ref);const k=cellOf(x,z);if(k>=0)blocked[k]=0;explode(x,.6,z,c.kind===4?9:7.5,c.kind===4?175:150,true,rep,owner);if(c.kind===4)fires.push({x,y:.4,z,t:9,n:0});}
   else if(c.kind===2){c.wrecked=true;wreck(c.ref);explode(x,.8,z,6.5,130,true,rep,owner);fires.push({x,y:1,z,t:14,n:0});}}
+function blownList(){const L=[];for(let k=0;k<colliders.length&&L.length<900;k++){const c=colliders[k];if((c.off||c.wrecked)&&c.kind>=2&&c.kind<=4)L.push(c.id);}return L;}
+function blowQuiet(c){if(!c||c.off||c.wrecked||!(c.kind>=2&&c.kind<=4)||!c.ref)return;c.hp=0;
+  if(c.kind===2){c.wrecked=true;wreck(c.ref);}else{c.off=true;scene.remove(c.ref);const k=cellOf((c.x0+c.x1)/2,(c.z0+c.z1)/2);if(k>=0)blocked[k]=0;}}
 function explode(x,y,z,rad,dmg,byPlayer,rep,owner){fxExplosion(x,y,z,rad);sndBoom(x,z);const dp=Math.hypot(x-P.x,z-P.z);shake=Math.max(shake,clamp(1.3-dp/28,0,1));G.flash=Math.max(G.flash,clamp(.5-dp/40,0,.5));
   const hit=(tx,ty,tz)=>{const d=Math.hypot(tx-x,ty-y,tz-z);if(d>=rad)return 0;return(1-d/rad)*(los(x,y+.7,z,tx,ty,tz)?1:.25);};
   if(P.alive){const k=hit(P.x,P.y+1,P.z);if(k>0&&mpBlast(rep,owner))hurt(dmg*k*.7,x,z);}
@@ -2161,7 +2165,7 @@ function netTx(c,msg){try{if(c&&c.open)c.send(msg);}catch(e){}}
 // host: open a room under a fresh code (another code is tried if the first one is taken)
 function netHost(){netClose();NET.host=true;NET.state='opening';NET.tries=0;netHostTry();}
 function netHostTry(){const code=netCode(),p=new window.Peer(netId(code),netOpts());NET.peer=p;NET.code=code;
-  p.on('open',()=>{if(NET.peer!==p)return;NET.state='open';if(NET.onOpen)NET.onOpen();});
+  p.on('open',()=>{if(NET.peer!==p||NET.state!=='opening')return;NET.state='open';if(NET.onOpen)NET.onOpen();}); // 'open' fires again after every reconnect to the broker
   p.on('connection',c=>{if(NET.peer!==p)return;
     c.on('data',d=>{if(NET.peer===p&&NET.onData)NET.onData(c,d);});
     c.on('close',()=>{if(NET.peer===p&&NET.onGone)NET.onGone(c);});
@@ -2189,7 +2193,7 @@ function netJoin(code){netClose();NET.host=false;NET.state='opening';NET.code=co
 const MODES={ffa:{name:'Versus · free-for-all',vs:true},tdm:{name:'Versus · two teams',vs:true,teams:true},
   surv:{name:'Co-op · survival',coop:true},miss:{name:'Co-op · story mission',coop:true}};
 const MP={on:false,host:false,me:0,phase:'off',cfg:{mode:'ffa',arena:'plaza',kills:15,mins:8,diff:1,stage:0},players:new Map(),nextId:2,
-  rivals:[],mates:[],rx:0,keepT:0,tLeft:0,lseq:0,round:0,joinCb:null,away:false,hitBy:0,myShots:[],fireT:0,sendT:0,respT:0,oobT:0,sweepT:0,menuEv:null,endT:0,results:null};
+  rivals:[],mates:[],rx:0,keepT:0,tLeft:0,lseq:0,round:0,ended:0,tk:[0,0,0],txSeq:0,rxSeq:0,snapSeq:0,pend:null,joinCb:null,away:false,hitBy:0,myShots:[],fireT:0,sendT:0,respT:0,oobT:0,sweepT:0,menuEv:null,endT:0,results:null};
 // phase: off | lobby | play | end
 const MPMAX=8,MPE={},MPH={}; // MPE: what an event does on a player's machine; MPH: the host's bookkeeping for it
 const mpMode=()=>MODES[MP.cfg.mode]||MODES.ffa;
@@ -2202,10 +2206,11 @@ const hostList=()=>(MP.on&&MP.phase==='play'&&mpMode().vs)?MP.rivals:foes;
 function humans(){const L=[];if(P.alive)L.push(P);for(let k=0;k<MP.mates.length;k++)if(MP.mates[k].alive)L.push(MP.mates[k]);return L;}
 // more players, more hostiles. Two players get the single-player numbers: the second one takes the place of the AI squad.
 function coScale(){if(!mpCoop())return 1;const n=MP.players.size;return n<=2?1:Math.min(2,1+.22*(n-2));}
-const foeCap=()=>Q.maxFoes+(mpCoop()?Math.min(6,2*(MP.players.size-1)):0);
+function foeCap(){if(!mpCoop())return Q.maxFoes;let base=Q.maxFoes;for(const p of MP.players.values())if(p.touch)base=Math.min(base,10); // a phone anywhere in the game sets the limit
+  return base+Math.min(6,2*(MP.players.size-1));}
 function cleanName(s){s=String(s==null?'':s).replace(/[^\w \-.áéíóúñÁÉÍÓÚÑüÜ]/g,'').trim().slice(0,12).toUpperCase();return s||'PLAYER';}
 function mpPlayer(id,name){return{id,name:cleanName(name),team:0,cls:0,k:0,d:0,sc:0,alive:false,conn:null,rx:performance.now(),s:null,buf:[],hp:100,w:0,fl:0,x:0,y:0,z:0,
-  nx:0,ny:0,nz:0,nyaw:0,npitch:0,out:[],reveal:0,use:false};}
+  nx:0,ny:0,nz:0,nyaw:0,npitch:0,out:[],reveal:0,use:false,seq:0,touch:false,dieT:0};}
 // Messages can overtake each other on the way, so lobby states are numbered and rounds are counted: a late one never undoes a newer one.
 const mpLobby=()=>[MP.cfg,MP.phase,Array.from(MP.players.values(),p=>[p.id,p.name,p.team,p.cls,p.k,p.d,p.sc]),MP.host?++MP.lseq:MP.lseq,MP.round];
 function mpApplyLobby(L){if(!MP.host){if((L[3]|0)<MP.lseq)return;MP.lseq=L[3]|0;}Object.assign(MP.cfg,L[0]);MP.phase=L[1];const seen=new Set();
@@ -2215,19 +2220,19 @@ function mpApplyLobby(L){if(!MP.host){if((L[3]|0)<MP.lseq)return;MP.lseq=L[3]|0;
   if(MP.phase==='play')mpRelist();mpUi();}
 function mpSmallTeam(){let a=0,b=0;for(const p of MP.players.values()){if(p.team===1)a++;else if(p.team===2)b++;}return a<=b?1:2;}
 function mpBroadcastLobby(){if(!MP.host)return;const L=mpLobby();for(const pl of MP.players.values())netTx(pl.conn,['lobby',L]);if(MP.phase==='play')mpRelist();mpUi();}
-function mpReset(){for(const pl of MP.players.values())mpForget(pl);MP.players.clear();MP.rivals.length=0;MP.mates.length=0;MP.on=false;MP.host=false;MP.me=0;MP.phase='off';MP.lseq=0;MP.round=0;MP.away=false;MP.joinCb=null;MP.results=null;
+function mpReset(){for(const pl of MP.players.values())mpForget(pl);MP.players.clear();MP.rivals.length=0;MP.mates.length=0;MP.on=false;MP.host=false;MP.me=0;MP.phase='off';MP.lseq=0;MP.round=0;MP.ended=0;MP.rxSeq=0;MP.pend=null;MP.away=false;MP.joinCb=null;MP.results=null;
   NET.onOpen=NET.onFail=NET.onData=NET.onConn=NET.onGone=null;netClose();}
 
 // ---------- host
 function mpCreate(name,done){if(!NET.ok)return;mpReset();
   NET.onFail=m=>{mpReset();done(m);};
-  NET.onOpen=()=>{MP.on=true;MP.host=true;MP.me=1;MP.phase='lobby';MP.nextId=2;MP.players.set(1,mpPlayer(1,name));done('');};
+  NET.onOpen=()=>{MP.on=true;MP.host=true;MP.me=1;MP.phase='lobby';MP.nextId=2;const me=mpPlayer(1,name);me.touch=isTouch;MP.players.set(1,me);done('');};
   NET.onConn=c=>{c._pid=0;};NET.onData=mpHostRx;NET.onGone=c=>{if(c._pid)mpDrop(c._pid);};netHost();}
 function mpHostRx(c,d){if(!Array.isArray(d)||!MP.host)return;const t=d[0];
   if(!c._pid){if(t!=='hello')return;
     if(d[1]!==PV){netTx(c,['no','That game runs a different version. Everyone should reload the page, then try again.']);return;}
     if(MP.players.size>=MPMAX){netTx(c,['no','That game is full.']);return;}
-    const id=MP.nextId++,pl=mpPlayer(id,d[2]);pl.conn=c;c._pid=id;pl.cls=clamp(d[3]|0,0,CLS.length-1);pl.team=mpMode().teams?mpSmallTeam():mpMode().coop?1:0;MP.players.set(id,pl);
+    const id=MP.nextId++,pl=mpPlayer(id,d[2]);pl.conn=c;c._pid=id;pl.cls=clamp(d[3]|0,0,CLS.length-1);pl.touch=!!d[4];pl.team=mpMode().teams?mpSmallTeam():mpMode().coop?1:0;MP.players.set(id,pl);
     netTx(c,['welcome',id,mpLobby()]);mpBroadcastLobby();if(MP.phase==='play')mpLateJoin(pl);return;}
   const pl=MP.players.get(c._pid);if(!pl)return;pl.rx=performance.now();
   try{if(t==='s')mpState(pl,d);
@@ -2243,20 +2248,24 @@ function mpStart(ev){if(!MP.host||MP.phase==='play')return;const M=mpMode();let 
   for(const pl of MP.players.values()){pl.k=0;pl.d=0;pl.sc=0;if(M.teams){if(pl.team!==1&&pl.team!==2)pl.team=1+(n%2);}else pl.team=M.coop?1:0;n++;}
   if(M.teams&&n>1){let a=0;for(const pl of MP.players.values())if(pl.team===1)a++;if(a===0||a===n){n=0;for(const pl of MP.players.values())pl.team=1+(n++%2);}} // nobody plays a team match alone
   MP.phase='play';MP.round++;MP.menuEv=ev||null;const L=mpLobby(),X=mpStartExtra();for(const pl of MP.players.values())netTx(pl.conn,['start',L,X]);mpBegin(L,X);}
-function mpToLobby(){if(!MP.host)return;MP.phase='lobby';for(const pl of MP.players.values())netTx(pl.conn,['tolobby',MP.round]);mpBroadcastLobby();mpBackToLobby();}
+function mpToLobby(){if(!MP.host)return;MP.phase='lobby';MP.ended=MP.round;for(const pl of MP.players.values())netTx(pl.conn,['tolobby',MP.round]);mpBroadcastLobby();mpBackToLobby();}
 
 // ---------- guest
 function mpJoin(code,name,cls,done){if(!NET.ok)return;mpReset();MP.joinCb=done;const fin=m=>{const f=MP.joinCb;if(!f)return;MP.joinCb=null;if(m)mpReset();f(m);};
   NET.onFail=fin;
-  NET.onOpen=()=>{MP.rx=performance.now();netTx(NET.up,['hello',PV,cleanName(name),cls|0]);setTimeout(()=>fin('The host did not answer. Ask them to check that the game is still open.'),9000);};
+  NET.onOpen=()=>{MP.rx=performance.now();netTx(NET.up,['hello',PV,cleanName(name),cls|0,isTouch?1:0]);const p=NET.peer;
+    setTimeout(()=>{if(NET.peer===p)fin('The host did not answer. Ask them to check that the game is still open.');},9000);}; // (an earlier attempt's timer must not end a later one)
   NET.onData=(c,d)=>{if(!Array.isArray(d))return;MP.rx=performance.now();const t=d[0];
+    // nothing counts before the host's welcome; a start that overtook it waits for it
+    if(!MP.on&&t!=='welcome'&&t!=='no'&&t!=='kick'){if(t==='start')MP.pend=d;return;}
     try{if(t==='S')mpSnapshot(d);
       else if(t==='e')mpHandle(String(d[1]),d[2]|0,d.slice(3));
-      else if(t==='welcome'){MP.on=true;MP.host=false;MP.me=d[1]|0;MP.phase='lobby';MP.lseq=0;MP.round=d[2][4]|0;mpApplyLobby(d[2]);fin('');}
+      else if(t==='welcome'){MP.on=true;MP.host=false;MP.me=d[1]|0;MP.phase='lobby';MP.lseq=0;MP.round=d[2][4]|0;MP.ended=d[2][1]==='play'?MP.round-1:MP.round;mpApplyLobby(d[2]);fin('');
+        const q=MP.pend;MP.pend=null;if(q&&(q[1][4]|0)>MP.ended){MP.round=q[1][4]|0;mpBegin(q[1],q[2]);}}
       else if(t==='lobby')mpApplyLobby(d[1]);
-      else if(t==='start'){const r=d[1][4]|0;if(r>MP.round||(r===MP.round&&G.state!=='play')){MP.round=r;mpBegin(d[1],d[2]);}}
-      else if(t==='end'){if((d[2]|0)===MP.round&&!MP.results)mpShowEnd(d[1]);}
-      else if(t==='tolobby'){if((d[1]|0)===MP.round){MP.phase='lobby';mpBackToLobby();}}
+      else if(t==='start'){const r=d[1][4]|0;if(r>MP.ended&&(r>MP.round||G.state!=='play')){MP.round=r;mpBegin(d[1],d[2]);}} // a round that has already ended is never (re)started
+      else if(t==='end'){const r=d[2]|0;if(r>MP.ended&&r>=MP.round){MP.round=r;MP.ended=r;mpShowEnd(d[1]);}}
+      else if(t==='tolobby'){const r=d[1]|0;if(r>=MP.round&&(r>MP.ended||MP.phase!=='lobby')){MP.round=r;MP.ended=r;MP.phase='lobby';mpBackToLobby();}}
       else if(t==='no')fin(String(d[1]));
       else if(t==='kick')mpDropped(String(d[1]||'The host closed the game.'));
     }catch(e){if(!G.errN)console.error(e);G.errN=(G.errN||0)+1;}};
@@ -2282,7 +2291,8 @@ function mpFrame(raw){const now=performance.now();MP.keepT-=raw;
   else{if(MP.keepT<=0){MP.keepT=2;if(MP.phase!=='play'||G.state!=='play')netTx(NET.up,['k']);}
     const aw=now-MP.rx>6000;if(aw!==MP.away){MP.away=aw;mpUi();}if(now-MP.rx>(MP.phase==='play'?20000:150000))mpDropped('The connection to the host was lost.');}}
 // timers keep running in a tab that is not in front (on a computer at least), so the line stays up while that player's game stands still
-setInterval(()=>{if(!MP.on||!document.hidden)return;if(MP.host){for(const pl of MP.players.values())netTx(pl.conn,['k']);}else netTx(NET.up,['k']);},2500);
+setInterval(()=>{if(!MP.on||!document.hidden)return;const round=MP.phase==='play'&&G.state==='play';
+  if(MP.host){if(round)mpSnap();else for(const pl of MP.players.values())netTx(pl.conn,['k']);}else netTx(NET.up,round?['s'].concat(mpPack(),[++MP.txSeq]):['k']);},1500);
 window.addEventListener('pagehide',()=>{if(MP.on){if(MP.host){for(const pl of MP.players.values())netTx(pl.conn,['kick','The host closed the game.']);}else netTx(NET.up,['bye']);}});
 // =====================================================================
 // 08d MULTIPLAYER REPLICATION: each player simulates only itself and reports where it is 20 times a second; the host
@@ -2321,35 +2331,40 @@ function mpPuppets(dt){const rt=performance.now()-110;
 // flags: 1 alive, 2 crouched, 4 sprinting, 8 aiming, 16 fired a moment ago, 32 reloading, 64 holding USE, 128 on the ground, 256 just spawned
 function mpPack(){const fl=(P.alive?1:0)|(P.crouch>.5?2:0)|(P.sprinting?4:0)|(P.ads>.5?8:0)|(MP.fireT>0?16:0)|(P.reloading?32:0)|(IN.useHeld?64:0)|(P.ground?128:0)|(P.spawnT>0?256:0);
   const a=[Math.round(P.x*100),Math.round(P.y*100),Math.round(P.z*100),Math.round(angDiff(P.yaw,0)*1000),Math.round(P.pitch*1000),fl,widx(curW().id),Math.max(0,Math.round(P.hp))];
-  if(MP.myShots.length){a.push(MP.myShots);MP.myShots=[];}return a;}
+  if(MP.myShots.length){a.push(MP.myShots);MP.myShots=[];}else a.push(0);return a;}
 // a shot of mine, for the others to see and hear: where the round ended up
 function mpShot(hx,hy,hz){MP.fireT=.4;if(MP.myShots.length<6)MP.myShots.push([Math.round(hx*10),Math.round(hy*10),Math.round(hz*10)]);}
-function mpApply(pl,a,o){const x=a[o]/100,y=a[o+1]/100,z=a[o+2]/100,fl=a[o+5]|0,was=pl.alive;
-  if(!isFinite(x+y+z+a[o+3]+a[o+4]))return;
-  pl.nx=a[o];pl.ny=a[o+1];pl.nz=a[o+2];pl.nyaw=a[o+3];pl.npitch=a[o+4];pl.fl=fl;pl.hp=a[o+7]|0;pl.alive=!!(fl&1);pl.use=!!(fl&64);
+// Every number that arrives is checked and bounded before it is used or passed on: nothing a player sends may stall another player's game.
+function mpApply(pl,a,o){const nx=Math.round(+a[o]),ny=Math.round(+a[o+1]),nz=Math.round(+a[o+2]),nyaw=Math.round(+a[o+3]),npi=Math.round(+a[o+4]),was=pl.alive,now=performance.now();
+  if(!isFinite(nx)||!isFinite(ny)||!isFinite(nz)||!isFinite(nyaw)||!isFinite(npi))return;
+  if(nx<-4e5||nx>4e5||nz<-4e5||nz>4e5||ny<-2000||ny>30000||nyaw<-3300||nyaw>3300||npi<-3300||npi>3300)return;
+  let fl=a[o+5]|0;if((fl&1)&&!was&&now-pl.dieT<900)fl&=~1; // a report from before the death that arrived after the news of it
+  const x=nx/100,y=ny/100,z=nz/100;
+  pl.nx=nx;pl.ny=ny;pl.nz=nz;pl.nyaw=nyaw;pl.npitch=npi;pl.fl=fl;pl.hp=clamp(a[o+7]|0,0,999);pl.alive=!!(fl&1);pl.use=!!(fl&64);
   const w=clamp(a[o+6]|0,0,WIDS.length-1);if(pl.w!==w){pl.w=w;if(pl.s)setSoldierWeapon(pl.s,WIDS[w]);}
   if(pl.alive&&!was){pl.buf.length=0;mpPuppetUp(pl);}else if(!pl.alive&&was)mpPuppetDown(pl);
-  pl.buf.push({t:performance.now(),x,y,z,yaw:a[o+3]/1000,pitch:a[o+4]/1000});if(pl.buf.length>8)pl.buf.shift();pl.x=x;pl.y=y;pl.z=z;pl.yaw=a[o+3]/1000;
+  pl.buf.push({t:now,x,y,z,yaw:nyaw/1000,pitch:npi/1000});if(pl.buf.length>8)pl.buf.shift();pl.x=x;pl.y=y;pl.z=z;pl.yaw=nyaw/1000;
   const sh=a[o+8];if(Array.isArray(sh)){for(let k=0;k<sh.length&&k<6;k++){const q=sh[k];if(Array.isArray(q)){mpShowShot(pl,q);if(MP.host&&pl.out.length<8)pl.out.push(q);}}
     if(MP.host&&mpMode().coop)noiseEvent(x,z,90,true);}}
-function mpShowShot(pl,q){const s=pl.s;if(!s||!s.alive)return;s.revealT=2.5;const now=performance.now(),loud=now-(pl.sndT||0)>55;pl.sndT=now;const hx=q[0]/10,hy=q[1]/10,hz=q[2]/10,fx=-Math.sin(s.yaw),fz=-Math.cos(s.yaw),mx=s.x+fx*.85,my=s.y0+1.36-s.crouch*.42,mz=s.z+fz*.85;
-  if(!isFinite(hx+hy+hz))return;tracer(mx,my,mz,hx,hy,hz,0xfff0b0);if(loud){puff(mx,my,mz,0xffc45a,.26,.06,.05,1,0,0,0,true);sndShot(WIDS[pl.w]||'m4',s.x,s.z,false);}
+function mpShowShot(pl,q){const s=pl.s;if(!s||!s.alive)return;s.revealT=2.5;const now=performance.now(),loud=now-(pl.sndT||0)>55;pl.sndT=now;const hx=+q[0]/10,hy=+q[1]/10,hz=+q[2]/10,fx=-Math.sin(s.yaw),fz=-Math.cos(s.yaw),mx=s.x+fx*.85,my=s.y0+1.36-s.crouch*.42,mz=s.z+fz*.85;
+  if(!isFinite(hx+hy+hz)||Math.abs(hx)>5000||Math.abs(hy)>5000||Math.abs(hz)>5000)return;tracer(mx,my,mz,hx,hy,hz,0xfff0b0);if(loud){puff(mx,my,mz,0xffc45a,.26,.06,.05,1,0,0,0,true);sndShot(WIDS[pl.w]||'m4',s.x,s.z,false);}
   if(Math.hypot(hx-P.x,hz-P.z)<40)dust(hx,hy,hz,1);
   // a round that passes close to my head is heard
   const dx=hx-mx,dy=hy-my,dz=hz-mz,l2=dx*dx+dy*dy+dz*dz;if(l2>1&&P.alive&&!mpIsMate(pl)){const ex=P.x-mx,ey=P.y+1.5-my,ez=P.z-mz,u=clamp((ex*dx+ey*dy+ez*dz)/l2,0,1);
     if(u>.02&&Math.hypot(ex-dx*u,ey-dy*u,ez-dz*u)<1.6&&R()<.6){sndWhiz();G.supp=Math.min(1,G.supp+.15);}}}
 // host: a guest's report
-function mpState(pl,d){mpApply(pl,d,1);}
+function mpState(pl,d){const q=d[10]|0;if(q<=pl.seq)return;pl.seq=q;mpApply(pl,d,1);} // reports are numbered: one that was overtaken on the way is dropped
 // host: one snapshot for everyone
 let snapN=0;
 function mpSnap(){const ps=[],me=mpPack();me.unshift(MP.me);ps.push(me);
   for(const pl of MP.players.values()){if(pl.id===MP.me)continue;const a=[pl.id,pl.nx,pl.ny,pl.nz,pl.nyaw,pl.npitch,pl.fl,pl.w,pl.hp];if(pl.out.length){a.push(pl.out);pl.out=[];}ps.push(a);}
-  const m=['S',Math.round(MP.tLeft*10),ps,(++snapN%20===0)?Array.from(MP.players.values(),p=>[p.id,p.k,p.d,p.sc]):0];mpSnapExtra(m);
+  let sc=0;if(++snapN%20===0){sc=Array.from(MP.players.values(),p=>[p.id,p.k,p.d,p.sc]);sc.push([0,MP.tk[1],MP.tk[2],0]);} // id 0: the two teams' totals
+  const m=['S',Math.round(MP.tLeft*10),ps,sc,0,0,0,++MP.snapSeq];mpSnapExtra(m);
   for(const pl of MP.players.values())netTx(pl.conn,m);}
 // guest: the host's snapshot
-function mpSnapshot(d){if(MP.phase!=='play')return;MP.rxS=performance.now();MP.tLeft=(d[1]|0)/10;const ps=d[2];
+function mpSnapshot(d){if(MP.phase!=='play')return;const q=d[7]|0;if(q<=MP.rxSeq)return;MP.rxSeq=q;MP.rxS=performance.now();MP.tLeft=(d[1]|0)/10;const ps=d[2];
   if(Array.isArray(ps))for(let k=0;k<ps.length;k++){const a=ps[k];if(!Array.isArray(a)||a[0]===MP.me)continue;const pl=MP.players.get(a[0]);if(pl)mpApply(pl,a,1);}
-  const sc=d[3];if(Array.isArray(sc))for(const a of sc){const pl=MP.players.get(a[0]);if(pl){pl.k=a[1]|0;pl.d=a[2]|0;pl.sc=a[3]|0;}}
+  const sc=d[3];if(Array.isArray(sc))for(const a of sc){if(!Array.isArray(a))continue;if(a[0]===0){MP.tk[1]=a[1]|0;MP.tk[2]=a[2]|0;continue;}const pl=MP.players.get(a[0]);if(pl){pl.k=a[1]|0;pl.d=a[2]|0;pl.sc=a[3]|0;}}
   mpSnapExtraRx(d);}
 
 // ---------- hits and deaths
@@ -2357,16 +2372,19 @@ function mpSnapshot(d){if(MP.phase!=='play')return;MP.rxS=performance.now();MP.t
 function mpHitPlayer(s,dmg,zone,D,explosive){const m=explosive?1:zone===0?Math.min(D?D.head:2,2):zone===2?.75:1;G.hitT=.14;G.hitKill=false;sndUi('hit');s.flinch=.22;
   mpEvent('hit',s.pid,[Math.round(dmg*m),zone,D?widx(curW().id):W_KNIFE,Math.round(P.x),Math.round(P.z)]);}
 MPE.hit=(from,a)=>{if(!P.alive||P.spawnT>0||G.state!=='play')return;const pl=MP.players.get(from);if(pl&&mpIsMate(pl))return;
-  P.lastBy=from;P.lastHead=a[1]===0;P.lastW=a[2]|0;P.lastT=G.time;hurt(clamp(+a[0]||0,0,400),+a[3]||P.x,+a[4]||P.z);};
+  P.lastBy=from;P.lastHead=a[1]===0;P.lastW=a[2]|0;P.lastT=G.time;hurt(clamp(+a[0]||0,0,400),isFinite(+a[3])?+a[3]:P.x,isFinite(+a[4])?+a[4]:P.z);};
 function plReset(){P.vx=P.vz=P.vy=0;P.hp=100;P.alive=true;P.stam=1;P.crouching=false;P.crouch=0;P.ads=0;P.wantAds=false;P.reloading=false;P.swapT=0;P.swapTo=-1;P.meleeT=0;P.recoil=0;P.pitch=0;P.punch=0;P.roll=0;P.hurtT=9;P.bloom=0;P.kick=0;
-  IN.fire=false;IN.useHeld=false;}
+  IN.fire=false;IN.useHeld=false;IN.jump=IN.crouchT=IN.reload=IN.swap=IN.nade=IN.melee=IN.use=false;} // (a key pressed while down must not act at the respawn)
 // I died: say who did it. The host keeps the score.
 function mpDied(){const by=(P.lastBy&&G.time-P.lastT<8)?P.lastBy:0,me=mpMe(),kl=MP.players.get(by);P.deadT=0;MP.respT=mpMode().vs?3.5:8;IN.fire=false;P.wantAds=false;
-  if(me)me.d++;if(kl&&kl!==me&&!MP.host&&mpMode().vs){kl.k++;kl.sc+=100;}mpEvent('die',0,[by,by?(P.lastW|0):W_WORLD,by&&P.lastHead?1:0]);
+  if(me)me.d++;if(kl&&kl!==me&&!MP.host&&mpMode().vs)mpKill(kl);mpEvent('die',0,[by,by?(P.lastW|0):W_WORLD,by&&P.lastHead?1:0]);
   killFeed('',kl?'Killed by '+kl.name+(wName(P.lastW|0)?' · '+wName(P.lastW|0):''):'You are down');}
-MPH.die=(from,a)=>{const v=MP.players.get(from),k=MP.players.get(a[0]|0);if(v&&from!==MP.me)v.d++;if(k&&k!==v&&mpMode().vs){k.k++;k.sc+=100;}mpAfterDeath();};
+// a kill in versus counts for the player and for the team; the team's total stays when that player leaves
+function mpKill(k){k.k++;k.sc+=100;if(k.team===1||k.team===2)MP.tk[k.team]++;}
+MPH.die=(from,a)=>{const v=MP.players.get(from),k=MP.players.get(a[0]|0);if(v&&from!==MP.me)v.d++;if(k&&k!==v&&mpMode().vs)mpKill(k);mpAfterDeath();};
 MPE.die=(from,a)=>{const v=MP.players.get(from),by=a[0]|0,k=MP.players.get(by);if(!v)return;
-  if(!MP.host){v.d++;if(k&&k!==v&&mpMode().vs){k.k++;k.sc+=100;}}
+  v.alive=false;v.fl&=~1;v.dieT=performance.now();mpPuppetDown(v); // the news of a death does not wait for that player's next report
+  if(!MP.host){v.d++;if(k&&k!==v&&mpMode().vs)mpKill(k);}
   if(by===MP.me&&mpMode().vs){G.stats.kills++;if(a[2])G.stats.heads++;G.hitT=.3;G.hitKill=true;sndUi('kill');killFeed(a[2]?'HEADSHOT':'KILL',v.name);}
   else killFeed(k&&k!==v?k.name:'',k&&k!==v?'killed '+v.name:v.name+' is down');};
 function mpDead(dt){P.deadT+=dt;IN.fire=false;camera.position.y+=(P.y+.35-camera.position.y)*Math.min(1,dt*3);camera.rotation.z+=(.9-camera.rotation.z)*Math.min(1,dt*2.5);gunRoot.visible=false;
@@ -2381,19 +2399,24 @@ MPE.boom=(from,a)=>{const x=a[0]/100,y=a[1]/100,z=a[2]/100;if(!isFinite(x+y+z))r
   for(let k=0;k<nades.length;k++){const n=nades[k];if(n.rep&&n.by===from){const d=Math.hypot(n.x-x,n.z-z);if(d<bd){bd=d;bi=k;}}}
   if(bi>=0){scene.remove(nades[bi].m);nades.splice(bi,1);}
   explode(x,y,z,clamp(a[3]/10,1,14),clamp(+a[4]||0,0,260),false,true,a[5]?0:from);};
-MPE.pb=(from,a)=>{const c=colliders[a[0]|0];if(c&&c.kind>=2&&c.kind<=4)blowProp(c,true,from);};
+MPE.pb=(from,a)=>{const c=colliders[a[0]|0];if(c&&c.kind>=2&&c.kind<=4&&c.ref)blowProp(c,true,from);};
+// Barrels, fuel pumps and cars that are already gone on one machine (from an earlier round, or a single-player game before this one)
+// go on the others too when a round starts, without the bang, so that everybody has the same cover.
+function mpProps(L){const have=new Set();if(Array.isArray(L))for(let k=0;k<L.length&&k<900;k++){const c=colliders[L[k]|0];if(c){have.add(c.id);blowQuiet(c);}}
+  if(!MP.host){const mine=blownList().filter(id=>!have.has(id));if(mine.length)mpEvent('pbs',0,mine);}}
+MPE.pbs=(from,a)=>{for(let k=0;k<a.length&&k<900;k++)blowQuiet(colliders[a[k]|0]);};
 // whose explosion is it, for the purposes of my own skin? 0 = nobody's (mine, or the world's). Team mates' explosions do not hurt.
 function mpBlast(rep,owner){if(!MP.on)return true;const by=rep?owner|0:0,pl=MP.players.get(by);if(pl&&mpIsMate(pl))return false;P.lastBy=by;P.lastW=W_NADE;P.lastHead=false;P.lastT=G.time;return true;}
 
 // ---------- starting a round, and the per-frame work while it runs
-function mpBegin(L,X){mpApplyLobby(L);MP.phase='play';MP.results=null;MP.myShots=[];MP.respT=0;MP.oobT=0;MP.fireT=0;MP.sendT=0;MP.rxS=performance.now();P.lastBy=0;P.lastT=-99;P.spawnT=0;
-  for(const pl of MP.players.values()){pl.alive=false;pl.buf.length=0;pl.out.length=0;if(pl.id!==MP.me&&!pl.s)mpPuppet(pl);if(pl.s){pl.s.alive=false;pl.s.g.visible=false;}}
-  mpClose();clearFeeds();mpEl.mpBoard.hidden=false;mpEl.mpBoard._h='';
+function mpBegin(L,X){if(G.state==='lost')return;mpApplyLobby(L);MP.phase='play';MP.results=null;MP.myShots=[];MP.respT=0;MP.oobT=0;MP.fireT=0;MP.sendT=0;MP.rxS=performance.now();P.lastBy=0;P.lastT=-99;P.spawnT=0;MP.tk[1]=MP.tk[2]=0;MP.heliP=0;
+  for(const pl of MP.players.values()){pl.alive=false;pl.fl=0;pl.nx=pl.ny=pl.nz=pl.nyaw=pl.npitch=0;pl.hp=100;pl.dieT=0;pl.use=false;pl.buf.length=0;pl.out.length=0;if(pl.id!==MP.me&&!pl.s)mpPuppet(pl);if(pl.s){pl.s.alive=false;pl.s.g.visible=false;}}
+  mpClose();clearFeeds();mpEl.mpBoard.hidden=false;mpEl.mpBoard._h='';mpProps(X&&X.props);
   if(mpMode().vs)vsBegin(X);else coBegin(X);
   enterPlay(MP.menuEv);MP.menuEv=null;}
 function mpTick(dt,raw){if(MP.fireT>0)MP.fireT-=dt;if(P.spawnT>0)P.spawnT-=dt;mpPuppets(dt);
   if(mpMode().vs)vsTick(dt,raw);else coTick(dt,raw);
-  MP.sendT-=raw;if(MP.sendT<=0){MP.sendT=.05;if(MP.host)mpSnap();else netTx(NET.up,['s'].concat(mpPack()));}}
+  MP.sendT-=raw;if(MP.sendT<=0){MP.sendT=.05;if(MP.host)mpSnap();else netTx(NET.up,['s'].concat(mpPack(),[++MP.txSeq]));}}
 // =====================================================================
 // 08e VERSUS: players against players in one part of the town. Free-for-all or two teams, weapon classes,
 // respawns away from the enemy, a kill limit and a clock (both kept by the host).
@@ -2420,9 +2443,9 @@ function vsSpawnPoint(first){const A=arena(),cx=(A.x0+A.x1)/2,cz=(A.z0+A.z1)/2,L
 function vsSpawn(first){const A=arena(),p=vsSpawnPoint(first),me=mpMe();plReset();giveClass(me?me.cls:0);P.x=p[0];P.z=p[1];P.y=0;P.yaw=Math.atan2(-((A.x0+A.x1)/2-p[0]),-((A.z0+A.z1)/2-p[1]));
   P.spawnT=2.5;P.lastBy=0;P.lastT=-99;MP.oobT=0;pushOut(P,.45,0);camera.rotation.z=0;}
 function vsBegin(X){G.mode='versus';resetWorldState();removeJammer(false);for(const a of allies)removeSoldier(a);allies.length=0;MS.st=null;MS.i=-1;MS.surv=null;
-  G.dmgK=1;G.score=0;G.stats={kills:0,heads:0,shots:0,hits:0,deaths:0,time:0};MP.tLeft=X&&X.t>0?X.t:MP.cfg.mins*60;MP.spots=arenaSpots();MP.sweepT=14;OBJ.show=false;
+  G.dmgK=1;G.score=0;G.stats={kills:0,heads:0,shots:0,hits:0,deaths:0,time:0};MP.tLeft=X&&X.t>0?X.t:MP.cfg.mins*60;if(X&&Array.isArray(X.tk)){MP.tk[1]=X.tk[0]|0;MP.tk[2]=X.tk[1]|0;}MP.spots=arenaSpots();MP.sweepT=14;OBJ.show=false;
   vsSpawn(!(X&&X.late));banner(arena().n.toUpperCase(),(mpMode().teams?'TWO TEAMS':'FREE-FOR-ALL')+' · FIRST TO '+MP.cfg.kills);}
-function vsTeamKills(t){let n=0;for(const p of MP.players.values())if(p.team===t)n+=p.k;return n;}
+const vsTeamKills=t=>MP.tk[t]|0; // kept apart from the players' own counts, so a team keeps the kills of someone who left
 function vsTick(dt,raw){const A=arena();
   if(P.alive){if(P.x<A.x0||P.x>A.x1||P.z<A.z0||P.z>A.z1){MP.oobT+=dt;G.prompt='Leaving the battle. Turn back: <b>'+Math.max(0,Math.ceil(6-MP.oobT))+'</b>';
       if(MP.oobT>6){P.lastBy=0;P.lastT=-99;P.spawnT=0;hurt(999,P.x,P.z);}}else MP.oobT=0;}
@@ -2437,15 +2460,15 @@ function vsTick(dt,raw){const A=arena();
 function vsRows(){const rows=Array.from(MP.players.values(),p=>[p.name,p.k,p.d,p.team,p.id]);rows.sort((a,b)=>b[1]-a[1]||a[2]-b[2]);return rows;}
 function vsCheck(){if(!MP.host||MP.phase!=='play'||!mpMode().vs)return;const K=MP.cfg.kills;
   if(mpMode().teams){if(vsTeamKills(1)>=K||vsTeamKills(2)>=K)vsEnd();}else for(const p of MP.players.values())if(p.k>=K){vsEnd();return;}}
-function vsEnd(){if(!MP.host||MP.phase!=='play')return;MP.phase='end';const rows=vsRows();let title;
+function vsEnd(){if(!MP.host||MP.phase!=='play')return;MP.phase='end';MP.ended=MP.round;const rows=vsRows();let title;
   if(mpMode().teams){const a=vsTeamKills(1),b=vsTeamKills(2);title=a===b?'Draw':'Team '+(a>b?1:2)+' wins';}
   else title=rows.length>1&&rows[0][1]===rows[1][1]?'Draw':rows[0][0]+' wins';
-  const Rr={title,rows,teams:!!mpMode().teams};for(const pl of MP.players.values())netTx(pl.conn,['end',Rr,MP.round]);mpBroadcastLobby();mpShowEnd(Rr);}
+  const Rr={title,rows,teams:!!mpMode().teams,tk:[vsTeamKills(1),vsTeamKills(2)]};for(const pl of MP.players.values())netTx(pl.conn,['end',Rr,MP.round]);mpBroadcastLobby();mpShowEnd(Rr);}
 
 // ---------- hooks the session layer calls; the co-op modes add to these in their own file
-function mpStartExtra(){return mpMode().vs?{t:MP.cfg.mins*60}:coStartExtra();}
+function mpStartExtra(){const X=mpMode().vs?{t:MP.cfg.mins*60}:coStartExtra();X.props=blownList();return X;}
 function mpLateJoin(pl){if(mpMode().coop){for(const a of allies)removeSoldier(a);allies.length=0;} // the AI squad makes way for a second player
-  const X=mpMode().vs?{t:MP.tLeft,late:1}:coStartExtra(true);netTx(pl.conn,['start',mpLobby(),X]);}
+  const X=mpMode().vs?{t:MP.tLeft,late:1,tk:[MP.tk[1],MP.tk[2]]}:coStartExtra(true);X.props=blownList();netTx(pl.conn,['start',mpLobby(),X]);}
 function mpAfterDeath(){if(mpMode().vs)vsCheck();else coAfterDeath();}
 function mpAfterLeave(){if(mpMode().vs){let n=0;for(const p of MP.players.values())n++;if(n<2&&MP.phase==='play'){killFeed('','Everyone else has left');}}}
 function mpSnapExtra(m){if(mpMode().coop)coSnap(m);}
@@ -2457,7 +2480,7 @@ const mpEl={};['btnMp','mpUi','mpHome','mpLobby','mpName','mpCode','mpMsg','btnM
   'lArena','lKills','lMins','lDiff','lStage','lCls','mpList','mpCls','btnMpTeam','btnMpStart','mpBoard','card'].forEach(k=>mpEl[k]=$(k));
 const mpSay=t=>{mpEl.mpMsg.textContent=t||'';};
 function mpFill(sel,opts,val){sel.textContent='';for(const o of opts){const e=document.createElement('option');e.value=String(o[0]);e.textContent=o[1];sel.appendChild(e);}if(val!==undefined)sel.value=String(val);}
-function mpOpen(code,note){if(!NET.ok)return;mpEl.card.classList.add('mp');mpEl.mpUi.hidden=false;el.menuTitle.textContent='Multiplayer';el.menu.hidden=false;el.menu.scrollTop=0;
+function mpOpen(code,note){if(!NET.ok||G.state==='lost')return;mpEl.card.classList.add('mp');mpEl.mpUi.hidden=false;el.menuTitle.textContent='Multiplayer';el.menu.hidden=false;el.menu.scrollTop=0;
   if(!mpEl.mpName.value)mpEl.mpName.value=SAVE.name||'';if(code)mpEl.mpCode.value=code;
   mpEl.mpHome.classList.toggle('inv',!!code);mpEl.btnMpJoin.className=code?'cta':'alt'; // someone who followed an invite link is here to join
   if(!mpEl.mpCls.options.length){mpFill(mpEl.mpCls,CLSN.map((n,k)=>[k,n]),SAVE.cls|0);
@@ -2465,9 +2488,9 @@ function mpOpen(code,note){if(!NET.ok)return;mpEl.card.classList.add('mp');mpEl.
     mpFill(mpEl.mpKills,[[10,'10 kills'],[15,'15 kills'],[25,'25 kills'],[40,'40 kills']]);mpFill(mpEl.mpMins,[[5,'5 minutes'],[8,'8 minutes'],[12,'12 minutes'],[20,'20 minutes']]);
     mpFill(mpEl.mpDiff,[[0,'Recruit'],[1,'Regular'],[2,'Veteran']]);mpFill(mpEl.mpStage,ST.slice(0,ST.length-1).map((s,k)=>[k,(k+1)+'. '+s.title]));}
   mpSay(note||'');mpUi();}
-function mpClose(){mpEl.card.classList.remove('mp');mpEl.mpUi.hidden=true;}
+function mpClose(){mpEl.card.classList.remove('mp','room');mpEl.mpUi.hidden=true;}
 // draw the panel for whatever state the room is in
-function mpUi(){if(mpEl.mpUi.hidden)return;const inRoom=MP.on&&(MP.phase==='lobby'||MP.phase==='end'||MP.phase==='play');mpEl.mpHome.hidden=inRoom;mpEl.mpLobby.hidden=!inRoom;
+function mpUi(){if(mpEl.mpUi.hidden)return;const inRoom=MP.on&&(MP.phase==='lobby'||MP.phase==='end'||MP.phase==='play');mpEl.mpHome.hidden=inRoom;mpEl.mpLobby.hidden=!inRoom;mpEl.card.classList.toggle('room',inRoom);
   mpEl.btnMpBack.textContent=inRoom?'Leave':'Back';mpEl.btnMpStart.hidden=!inRoom||!MP.host;if(!inRoom)return;
   const M=mpMode(),C=MP.cfg,h=MP.host;mpEl.mpCodeBig.textContent=NET.code||'-----';
   for(const k of ['mpMode','mpArena','mpKills','mpMins','mpDiff','mpStage'])mpEl[k].disabled=!h;
@@ -2508,16 +2531,19 @@ function mpStatList(){const me=mpMe();return me&&mpMode().vs?[['Kills',me.k],['D
 let boardT=0;
 function mpHud(dt){boardT-=dt;if(boardT>0)return;boardT=.4;const B=mpEl.mpBoard,rows=vsRows(),teams=!!mpMode().teams,vs=!!mpMode().vs;let h='';
   const my=mpMe(),mt=my?my.team:0;
-  for(let k=0;k<rows.length&&k<8;k++){const r=rows[k];h+='<div class="'+(r[4]===MP.me?'me ':'')+(teams?(r[3]===mt?'t1':'t2'):'')+'"><span>'+esc(r[0])+'</span><span>'+(vs?r[1]+' / '+r[2]:(MP.players.get(r[4]).alive||r[4]===MP.me&&P.alive?'':'DOWN'))+'</span></div>';}
+  // a phone has room for five lines: the leaders, and my own line if I am not among them
+  const n=Math.min(rows.length,8),lim=window.innerHeight<440?5:8,mi=rows.findIndex(r=>r[4]===MP.me),last=mi>=lim-1&&mi<n?mi:lim-1;
+  for(let k=0;k<n;k++){if(n>lim&&k>=lim-1&&k!==last)continue;const r=rows[k];h+='<div class="'+(r[4]===MP.me?'me ':'')+(teams?(r[3]===mt?'t1':'t2'):'')+'"><span>'+esc(r[0])+'</span><span>'+(vs?r[1]+' / '+r[2]:(MP.players.get(r[4]).alive||r[4]===MP.me&&P.alive?'':'DOWN'))+'</span></div>';}
   if(!MP.host&&MP.rxS&&performance.now()-MP.rxS>2500)h+='<div><span>Waiting for the host…</span><span></span></div>';
   if(B._h!==h){B._h=h;B.innerHTML=h;}}
 function mpWorldOff(){for(const pl of MP.players.values())mpForget(pl);MP.rivals.length=0;MP.mates.length=0;unlock();G.menuUp=false;G.state='menu';G.mode='mission';el.hud.hidden=true;mpEl.mpBoard.hidden=true;
-  resetWorldState();removeJammer(false);gunRoot.visible=false;clearFeeds();setDiff(SAVE.diff|0);camera.fov=P.baseFov;camera.updateProjectionMatrix();}
-function mpShowEnd(Rr){MP.phase='end';MP.results=Rr;for(const pl of MP.players.values())if(pl.s)pl.s.g.visible=false;unlock();G.menuUp=false;G.state='win';el.hud.hidden=true;gunRoot.visible=false;mpClose();
-  const rows=Array.isArray(Rr.rows)?Rr.rows:[];showMenu('mpend',String(Rr.title||'Game over'),(Rr.coop?'Score for each player. ':'Kills / deaths for each player. ')+(MP.host?'Go back to the lobby to play again or change the mode.':'The host can take everyone back to the lobby for another round.'),
+  resetWorldState();removeJammer(false);for(const a of allies)a.g.visible=false;gunRoot.visible=false;clearFeeds();setDiff(SAVE.diff|0);camera.fov=P.baseFov;camera.updateProjectionMatrix();}
+function mpShowEnd(Rr){if(G.state==='lost')return;MP.phase='end';MP.results=Rr;hideHeli();camera.fov=P.baseFov;camera.updateProjectionMatrix();for(const pl of MP.players.values())if(pl.s)pl.s.g.visible=false;unlock();G.menuUp=false;G.state='win';el.hud.hidden=true;gunRoot.visible=false;mpClose();
+  const rows=Array.isArray(Rr.rows)?Rr.rows:[];const tk=Rr.teams&&Array.isArray(Rr.tk)?'Team 1: '+(Rr.tk[0]|0)+' · Team 2: '+(Rr.tk[1]|0)+'. ':'';
+  showMenu('mpend',String(Rr.title||'Game over').slice(0,60),tk+(Rr.coop?'Score for each player. ':'Kills / deaths for each player. ')+(MP.host?'Go back to the lobby to play again or change the mode.':'The host can take everyone back to the lobby for another round.'),
     rows.slice(0,8).map((r,k)=>[(k+1)+'. '+cleanName(r[0])+(Rr.teams?' · T'+(r[3]|0):''),Rr.coop?String(r[5]|0):(r[1]|0)+' / '+(r[2]|0)]));}
-function mpBackToLobby(){mpWorldOff();showMenu('main','Multiplayer','');mpEl.mpMsg._auto=true;mpSay('');mpOpen();}
-function mpDropped(msg){mpReset();mpWorldOff();showMenu('main','Multiplayer','');mpOpen('',msg);mpEl.mpMsg._auto=false;}
+function mpBackToLobby(){if(G.state==='lost')return;mpWorldOff();showMenu('main','Multiplayer','');mpEl.mpMsg._auto=true;mpSay('');mpOpen();}
+function mpDropped(msg){mpReset();if(G.state==='lost')return;mpWorldOff();showMenu('main','Multiplayer','');mpOpen('',msg);mpEl.mpMsg._auto=false;}
 // =====================================================================
 // 08g CO-OP: survival and the story mission for several players. The host's machine runs the hostile soldiers and the
 // mission. Guests see the hostiles as stand-ins, report the hits they score, and are told when they are hit themselves.
@@ -2526,13 +2552,15 @@ const FKINDS=['rifle','rush','heavy','mark'];
 MP.fshots=[];MP.fmap=new Map();MP.fseq=0;MP.allDeadT=0;
 function coDiff(d){d=clamp(d|0,0,2);G.diff=[.55,.85,1.15][d];G.dmgK=[.8,1,1.15][d];} // for this game only: the single-player setting is not touched
 function coRefill(){for(const w of P.slots){const D=WDEF[w.id];w.mag=D.mag;w.res=Math.max(w.res,Math.round(D.max*.55));}P.nades=Math.max(2,P.nades);}
+// a place to stand near (x,z): never inside the Panteón, even when the team mate to join is standing there
+function coSpot(x,z){return spotNear(x,z,6,30)||spotNear(x,z,45,60)||(inCemetery(x,z)?null:[x,z]);}
 function coStartExtra(late){return{late:late?1:0,stage:late?Math.max(0,MS.i):clamp(MP.cfg.stage|0,0,ST.length-2),sx:Math.round(P.x),sz:Math.round(P.z)};}
 function coBegin(X){X=X||{};coDiff(MP.cfg.diff);MP.fmap.clear();MP.fshots.length=0;MP.fseq=0;MP.allDeadT=0;const surv=MP.cfg.mode==='surv';
   if(MP.host){if(surv)startSurvival();else startMission(clamp(X.stage|0,0,ST.length-2));return;}
   // a guest starts in an empty town that the host then fills in
   G.mode=surv?'survival':'mission';resetWorldState();removeJammer(false);for(const a of allies)removeSoldier(a);allies.length=0;MS.st=null;MS.i=-1;MS.surv=null;MS.phase='';MS.defT=0;
   G.score=0;G.stats={kills:0,heads:0,shots:0,hits:0,deaths:0,time:0};giveLoadout();OBJ.show=false;OBJ.text='';OBJ.sub='';OBJ.prog=0;
-  const sp=surv?[-4,16,0]:ST[clamp(X.stage|0,0,ST.length-2)].spawn,bx=X.late&&isFinite(+X.sx)?+X.sx:sp[0],bz=X.late&&isFinite(+X.sz)?+X.sz:sp[1],p=spotNear(bx,bz,5,30)||[bx,bz];
+  const sp=surv?[-4,16,0]:ST[clamp(X.stage|0,0,ST.length-2)].spawn,bx=X.late&&isFinite(+X.sx)?+X.sx:sp[0],bz=X.late&&isFinite(+X.sz)?+X.sz:sp[1],p=coSpot(bx,bz)||[sp[0],sp[1]];
   P.x=p[0];P.z=p[1];P.y=0;P.yaw=sp[2];P.spawnT=2;camera.rotation.z=0;}
 function coStageRx(i,force){if(i===MS.i&&!force)return;MS.i=i;MS.st=i>=0&&i<ST.length?ST[i]:null;G.stage=Math.max(0,i);const st=MS.st;MS.phase='';
   if(!st||!(st.heli||st.type==='reach'))hideHeli();}
@@ -2554,19 +2582,19 @@ MPE.fh=(from,a)=>{if(!MP.host)return;const nid=a[0]|0;let s=null;for(let k=0;k<f
   const pl=MP.players.get(from),w=a[4]|0;MP.hitBy=from;try{damageSoldier(s,clamp(+a[1]||0,0,400),a[2]|0,pl?pl.x:s.x,pl?pl.z:s.z,false,!!a[3],w<WIDS.length?WDEF[WIDS[w]]:null);}finally{MP.hitBy=0;}};
 // everybody down at the same moment: back to the checkpoint in the mission, the end of the line in survival
 function coWipe(){if(G.mode==='survival'){coFinish(false);return;}radio('COMMAND','Everyone is down. Regroup at the last checkpoint.');restartCheckpoint();camera.rotation.z=0;}
-function coFinish(won){if(!MP.host||MP.phase!=='play')return;MP.phase='end';const rows=Array.from(MP.players.values(),p=>[p.name,p.k,p.d,p.team,p.id,p.sc]);rows.sort((a,b)=>b[5]-a[5]);
+function coFinish(won){if(!MP.host||MP.phase!=='play')return;MP.phase='end';MP.ended=MP.round;const rows=Array.from(MP.players.values(),p=>[p.name,p.k,p.d,p.team,p.id,p.sc]);rows.sort((a,b)=>b[5]-a[5]);
   const Rr={title:won?'Mission complete':G.mode==='survival'?'Overrun at wave '+(MS.surv?MS.surv.wave:0):'Mission failed',rows,coop:1};
   for(const pl of MP.players.values())netTx(pl.conn,['end',Rr,MP.round]);mpBroadcastLobby();hideHeli();mpShowEnd(Rr);}
 function coAfterDeath(){}
 function coTick(dt,raw){
   if(MP.host){if(humans().length===0){MP.allDeadT+=raw;if(MP.allDeadT>2.4){MP.allDeadT=0;coWipe();}}else MP.allDeadT=0;return;}
   const st=MS.st;if(!st)return;
-  if(st.heli){if(!heli.g)makeHeli();if(!heli.on){heli.on=true;heli.landed=false;heli.g.visible=true;}updHeli(dt,OBJ.prog);}else if(st.type==='reach'){if(!heli.g)makeHeli();heli.on=true;heli.g.visible=true;updHeli(dt,1);}
+  if(st.heli){if(!heli.g)makeHeli();if(!heli.on){heli.on=true;heli.landed=false;heli.g.visible=true;MP.heliP=OBJ.prog;}MP.heliP+=(OBJ.prog-MP.heliP)*Math.min(1,dt*1.6);updHeli(dt,MP.heliP);} // the progress arrives in whole percent a few times a secondelse if(st.type==='reach'){if(!heli.g)makeHeli();heli.on=true;heli.g.visible=true;updHeli(dt,1);}
   if(st.type==='plant'&&P.alive){const d=Math.hypot(P.x-st.x,P.z-st.z);
     if(MS.phase===''&&MS.jam&&d<st.r)G.prompt='Hold <b>'+(isTouch?'USE':'F')+'</b> to plant the charge';else if(MS.phase==='defend'&&d<11&&MS.defT<8)G.prompt='Move away from the truck';}}
 // down in co-op: back after a few seconds next to a team mate who is still standing
 function coDead(dt){const H=humans();if(!H.length){G.prompt='Everyone is down';return;}if(MP.respT>0){G.prompt='Back in <b>'+Math.ceil(MP.respT)+'</b>';return;}
-  let m=H[0],bd=1e9;for(const h of H){const d=Math.hypot(h.x-P.x,h.z-P.z);if(d<bd){bd=d;m=h;}}const p=spotNear(m.x,m.z,6,30)||[m.x,m.z];
+  let m=H[0],bd=1e9;for(const h of H){const d=Math.hypot(h.x-P.x,h.z-P.z);if(d<bd){bd=d;m=h;}}const p=coSpot(m.x,m.z);if(!p){G.prompt='Stand by';return;}
   plReset();coRefill();P.x=p[0];P.z=p[1];P.y=0;P.yaw=m.yaw||0;P.spawnT=2.5;camera.rotation.z=0;killFeed('','Back in the fight');}
 
 // ---------- guest: the hostiles as the host reports them
@@ -2583,18 +2611,18 @@ MPE.ckpt=(from,a)=>{if(from!==1)return;resetWorldState();MP.fmap.clear();removeJ
   P.x=p[0];P.z=p[1];P.y=0;P.yaw=sp[2];coRefill();P.spawnT=2;camera.rotation.z=0;killFeed('','Back to the checkpoint');};
 function coSnapRx(d){const now=performance.now(),F=d[4];
   if(Array.isArray(F)){MP.fseq++;
-    for(const a of F){if(!Array.isArray(a))continue;const nid=a[0]|0,x=a[2]/10,z=a[3]/10,y0=a[4]/10,yaw=a[5]/100;if(!isFinite(x+z+y0+yaw))continue;let s=MP.fmap.get(nid);
-      if(!s){s=addSoldier(1,FKINDS[a[1]]||'rifle',x,z,{y0,yaw,aware:true,isStatic:!!(a[6]&8)});s.net=true;s.nid=nid;s.nb=[];s.lowered=false;MP.fmap.set(nid,s);}
-      if(!s.alive)continue;s.seen=MP.fseq;s.nfl=a[6]|0;s.aimP=(a[7]|0)/100;s.ntp=a[8]|0;s.nb.push({t:now,x,z,y0,yaw});if(s.nb.length>6)s.nb.shift();if((s.nfl&4)&&s.revealT<.5)s.revealT=.5;}
+    for(const a of F){if(!Array.isArray(a))continue;const nid=a[0]|0,x=+a[2]/10,z=+a[3]/10,y0=+a[4]/10,yaw=+a[5]/100;if(!isFinite(x+z+y0+yaw)||Math.abs(x)>4000||Math.abs(z)>4000||y0<-20||y0>300||Math.abs(yaw)>4)continue;let s=MP.fmap.get(nid);
+      if(!s){s=addSoldier(1,FKINDS[a[1]|0]||'rifle',x,z,{y0,yaw,aware:true,isStatic:!!(a[6]&8)});s.net=true;s.nid=nid;s.nb=[];s.lowered=false;MP.fmap.set(nid,s);}
+      if(!s.alive)continue;s.seen=MP.fseq;s.nfl=a[6]|0;s.aimP=clamp((a[7]|0)/100,-1,1);s.ntp=a[8]|0;s.nb.push({t:now,x,z,y0,yaw});if(s.nb.length>6)s.nb.shift();if((s.nfl&4)&&s.revealT<.5)s.revealT=.5;}
     // a hostile the host no longer lists (cleared at a restart, say) goes from here as well
     for(const e of Array.from(MP.fmap)){const s=e[1];if(!s.alive){MP.fmap.delete(e[0]);continue;}
       if(MP.fseq-s.seen>12){MP.fmap.delete(e[0]);const i=foes.indexOf(s);if(i>=0)foes.splice(i,1);removeSoldier(s);if(s.laser){scene.remove(s.laser);s.laser=null;}}}}
   const SH=d[5];if(Array.isArray(SH))for(const q of SH)if(Array.isArray(q))coShowFoeShot(q);
   const O=d[6];if(Array.isArray(O)){G.mode=O[0]?'survival':'mission';coStageRx(O[1]|0,false);OBJ.text=String(O[2]).slice(0,120);OBJ.sub=String(O[3]).slice(0,120);OBJ.prog=clamp((O[4]|0)/100,0,1);
-    OBJ.x=+O[5]||0;OBJ.z=+O[6]||0;OBJ.y=(+O[7]||18)/10;OBJ.show=!!O[8];const fl=O[9]|0;MS.phase=(fl&2)?'defend':'';MS.defT=(+O[10]||0)/10;
+    OBJ.x=clamp(+O[5]||0,-4000,4000);OBJ.z=clamp(+O[6]||0,-4000,4000);OBJ.y=clamp((+O[7]||18)/10,0,300);OBJ.show=!!O[8];const fl=O[9]|0;MS.phase=(fl&2)?'defend':'';MS.defT=(+O[10]||0)/10;
     if((fl&1)&&!MS.jam)makeJammer();else if(!(fl&1)&&MS.jam)removeJammer(false);
     if(O[0]){if(!MS.surv)MS.surv={wave:0,t:0,live:false,left:0};MS.surv.wave=O[11]|0;}}}
-function coShowFoeShot(q){const s=MP.fmap.get(q[0]|0);if(!s||!s.alive)return;const hx=q[1]/10,hy=q[2]/10,hz=q[3]/10;if(!isFinite(hx+hy+hz))return;
+function coShowFoeShot(q){const s=MP.fmap.get(q[0]|0);if(!s||!s.alive)return;const hx=+q[1]/10,hy=+q[2]/10,hz=+q[3]/10;if(!isFinite(hx+hy+hz)||Math.abs(hx)>5000||Math.abs(hy)>5000||Math.abs(hz)>5000)return;
   const fx=-Math.sin(s.yaw),fz=-Math.cos(s.yaw),mark=s.kind==='mark',mx=s.x+fx*.85,my=s.y0+(mark?1.4:(1.36-s.crouch*.42)*s.sc),mz=s.z+fz*.85;
   s.revealT=3;sndShot(s.K.snd,s.x,s.z,false);puff(mx,my,mz,0xffc45a,mark?.4:.26,.06,.05,1,0,0,0,true);if(mark||q[5]||R()<.6)tracer(mx,my,mz,hx,hy,hz,mark?0xfff6d0:0xffd27a);
   if(!q[5]&&Math.hypot(hx-P.x,hz-P.z)<45)dust(hx,hy,hz,1);if((q[4]|0)===MP.me&&!q[5]&&R()<.5){sndWhiz();G.supp=Math.min(1,G.supp+.22);}}
@@ -2728,7 +2756,7 @@ function showMenu(mode,title,msg,stats){menuMode=mode;el.menuTitle.textContent=t
   el.btnStart.hidden=mode==='mpend'&&!MP.host;
   el.btnSurvival.textContent=mode==='pause'&&mission?'Restart checkpoint':'Survival';el.btnSurvival.hidden=(mode==='pause'&&!mission)||mode==='dead'||mp;
   el.btnQuit.hidden=(mode==='win'&&!mp)||(mode==='main'&&!(SAVE.stage>0));el.btnQuit.textContent=mode==='main'?'New mission':mp?'Leave game':'Quit to menu';
-  mpEl.btnMp.hidden=!NET.ok||mode!=='main';el.btnMapMenu.hidden=mode==='mpend';
+  mpEl.btnMp.hidden=!NET.ok||mode!=='main';el.btnMapMenu.hidden=mode==='mpend';$('lOptDiff').hidden=mp; // in a multiplayer game the host's lobby sets the difficulty
   el.controls.hidden=mode==='dead'||mode==='win'||mode==='mpend';el.menu.hidden=false;el.menu.scrollTop=0;}
 function statList(){const s=G.stats,acc=s.shots?Math.round(s.hits/s.shots*100):0,m=Math.floor(s.time/60),sec=Math.floor(s.time%60);
   return[['Score',G.score],['Kills',s.kills],['Headshots',s.heads],['Accuracy',acc+'%'],['Time',m+':'+String(sec).padStart(2,'0')]];}
@@ -2742,7 +2770,7 @@ function setShadows(on){Q.shadows=on;renderer.shadowMap.enabled=on;sun.castShado
     s.camera.left=-110;s.camera.right=110;s.camera.top=110;s.camera.bottom=-110;s.camera.near=20;s.camera.far=520;s.bias=-0.0004;s.normalBias=0.5;s.camera.updateProjectionMatrix();}
   scene.traverse(o=>{if(o.material){if(Array.isArray(o.material))o.material.forEach(m=>m.needsUpdate=true);else o.material.needsUpdate=true;}});}
 el.optSens.value=SAVE.sens;el.optSnd.checked=SAVE.snd;el.optShadow.checked=SAVE.shadow;P.sens=SAVE.sens/100;AU.on=SAVE.snd;if(SAVE.shadow!==Q.shadows)setShadows(SAVE.shadow);
-const optDiff=$('optDiff');function setDiff(d){SAVE.diff=d;G.diff=[.55,.85,1.15][d];G.dmgK=[.8,1,1.15][d];}
+const optDiff=$('optDiff');function setDiff(d){SAVE.diff=d;if(MP.on&&MP.phase==='play')return;G.diff=[.55,.85,1.15][d];G.dmgK=[.8,1,1.15][d];} // a multiplayer round keeps the difficulty its host chose
 optDiff.value=String(SAVE.diff);setDiff(SAVE.diff|0);optDiff.addEventListener('change',()=>{setDiff(+optDiff.value);saveGame();});
 el.optSens.addEventListener('input',()=>{SAVE.sens=+el.optSens.value;P.sens=SAVE.sens/100;saveGame();});
 el.optSnd.addEventListener('change',()=>{SAVE.snd=el.optSnd.checked;setSound(SAVE.snd);saveGame();});
@@ -2756,8 +2784,8 @@ function enterPlay(ev){el.menu.hidden=true;el.mapOver.hidden=true;el.hud.hidden=
   if(ev&&(ev.pointerType?ev.pointerType==='mouse':!isTouch))lock();}
 function pause(){if(G.state!=='play')return;
   // a multiplayer game cannot stop for one player: the menu opens over it and the game goes on
-  if(MP.on){unlock();if(!G.menuUp){G.menuUp=true;IN.fire=false;IN.useHeld=false;P.wantAds=false;showMenu('pause','Game menu','The game goes on while this menu is open.',mpStatList());}return;}
-  G.state='pause';IN.fire=false;IN.useHeld=false;showMenu('pause','Paused',G.mode==='mission'?OBJ.text+'.':'Survival, wave '+(MS.surv?MS.surv.wave:0)+'.',statList());}
+  if(MP.on){unlock();if(!G.menuUp){G.menuUp=true;IN.fire=false;IN.useHeld=false;P.wantAds=false;el.hud.hidden=true;showMenu('pause','Game menu','The game goes on while this menu is open.',mpStatList());}return;}
+  G.state='pause';IN.fire=false;IN.useHeld=false;el.hud.hidden=true;showMenu('pause','Paused',G.mode==='mission'?OBJ.text+'.':'Survival, wave '+(MS.surv?MS.surv.wave:0)+'.',statList());}
 function toMain(){unlock();G.state='menu';G.menuUp=false;G.mode='mission';setDiff(SAVE.diff|0);mpEl.mpBoard.hidden=true;el.hud.hidden=true;resetWorldState();removeJammer(false);for(const a of allies)a.g.visible=false;gunRoot.visible=false;clearFeeds();camera.fov=P.baseFov;camera.updateProjectionMatrix();
   showMenu('main','Operación Insurgentes','A mercenary force has seized the town and the crossroads where Highway 1 turns east for Loreto. Lead fireteam Halcón up Blvd. Benito Juárez, take the Glorieta, and clear the Plaza Principal.');}
 function onPlayerDeath(){if(MP.on){mpDied();return;}G.state='dead';IN.fire=false;unlock();saveGame();}
@@ -2822,8 +2850,8 @@ tap('btnPause',()=>{unlock();pause();});tap('btnMap',()=>{unlock();openMap();});
 function resize(){const w=window.innerWidth||640,h=window.innerHeight||360;renderer.setSize(w,h,false);camera.aspect=w/h;P.baseFov=w<h?88:74;if(G.state!=='play'){camera.fov=P.baseFov;}camera.updateProjectionMatrix();}
 window.addEventListener('resize',resize);resize();
 // the static town is uploaded once and its buffers are then released, so a lost graphics context means a reload
-canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();saveGame();unlock();G.state='lost';menuMode='lost';el.hud.hidden=true;el.mapOver.hidden=true;el.menuTitle.textContent='Graphics were reset';
-  el.menuMsg.textContent='Your device reclaimed the graphics memory. Reload the page to carry on from your last checkpoint.';el.menuStats.hidden=true;el.btnStart.textContent='Reload';
+canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();saveGame();unlock();G.state='lost';menuMode='lost';G.menuUp=false;if(MP.on||NET.state!=='off')mpLeave();mpClose();mpEl.btnMp.hidden=true;mpEl.mpBoard.hidden=true;el.hud.hidden=true;el.mapOver.hidden=true;el.menuTitle.textContent='Graphics were reset';
+  el.menuMsg.textContent='Your device reclaimed the graphics memory. Reload the page to carry on from your last checkpoint.';el.menuStats.hidden=true;el.btnStart.textContent='Reload';el.btnStart.hidden=false;
   el.btnSurvival.hidden=true;el.btnQuit.hidden=true;el.btnMapMenu.hidden=true;el.controls.hidden=true;el.menu.hidden=false;});
 const BOT={on:false,f:0,s:0,sprint:false};
 function gatherInput(){if(BOT.on){IN.f=BOT.f;IN.s=BOT.s;IN.sprint=BOT.sprint;return;}if(G.menuUp){IN.f=0;IN.s=0;IN.sprint=false;IN.fire=false;return;}let f=0,s=0;if(keys.KeyW||keys.ArrowUp)f+=1;if(keys.KeyS||keys.ArrowDown)f-=1;if(keys.KeyD||keys.ArrowRight)s+=1;if(keys.KeyA||keys.ArrowLeft)s-=1;
@@ -2847,7 +2875,7 @@ function tick(now){requestAnimationFrame(tick);if(G.state==='lost')return;const 
       showMenu('dead','You are down',G.mode==='mission'?'Halcón, regroup. You restart at the last checkpoint with your squad.':'You held the Glorieta through wave '+(MS.surv?MS.surv.wave:0)+'.',statList());}}
   fxUpdate(dt);sky.position.copy(camera.position);sierra.position.set(camera.position.x,0,camera.position.z);sunSprite.position.copy(camera.position).addScaledVector(SUN,2000);if(Q.shadows)sunFollow(camera.position.x,camera.position.z);
   cullChunks(camera.position.x,camera.position.z);renderer.render(scene,camera);}
-window.__game={buildMs:Math.round(performance.now()-T0),sim:(n,dt)=>{for(let i=0;i<n;i++){frame++;if(G.state==='play')simStep(dt,.01);else if(G.state==='dead'){updAI(dt);updNades(dt);updProps(dt);}fxUpdate(dt);}},setShadows,BOT,makeField,flow,flowDir,los,eyeY,chestY,camera,renderer,scene,belfries,buildings,lowCover,G,P,MS,OBJ,foes,allies,ST,IN,startMission,startSurvival,stageStart,stageDone,enterPlay,MP,NET,ARENAS,mpCreate,mpJoin,mpStart,mpSetCfg,mpSetMe,mpLeave,mpEvent,mpOpen,hurt,toMain,pause,explode,humans,damageProp,picks,nades,colliders,Q,WDEF,addPick,explode,spawnWave,restartCheckpoint,SAVE,showWeapon,addSoldier,animSoldier,clearSoldiers,gunRoot,updCamera,cullChunks,cars,BLOCKS,chunkMeshes,freeSpot,
+window.__game={buildMs:Math.round(performance.now()-T0),sim:(n,dt)=>{for(let i=0;i<n;i++){frame++;if(G.state==='play')simStep(dt,.01);else if(G.state==='dead'){updAI(dt);updNades(dt);updProps(dt);}fxUpdate(dt);}},setShadows,BOT,makeField,flow,flowDir,los,eyeY,chestY,camera,renderer,scene,belfries,buildings,lowCover,G,P,MS,OBJ,foes,allies,ST,IN,startMission,startSurvival,stageStart,stageDone,enterPlay,MP,NET,ARENAS,mpCreate,mpJoin,mpStart,mpSetCfg,mpSetMe,mpLeave,mpEvent,mpOpen,hurt,toMain,pause,explode,humans,damageProp,picks,nades,colliders,Q,WDEF,addPick,explode,spawnWave,restartCheckpoint,SAVE,showWeapon,addSoldier,animSoldier,clearSoldiers,gunRoot,updCamera,cullChunks,cars,BLOCKS,chunkMeshes,freeSpot,heli,
   cam:(x,y,z,tx,ty,tz)=>{camera.position.set(x,y,z);camera.lookAt(tx,ty,tz);}};
 el.btnStart.disabled=false;el.btnMapMenu.hidden=false;toMain();mpAuto();requestAnimationFrame(tick);
 })();

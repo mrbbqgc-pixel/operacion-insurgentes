@@ -8,7 +8,7 @@ function setShadows(on){Q.shadows=on;renderer.shadowMap.enabled=on;sun.castShado
     s.camera.left=-110;s.camera.right=110;s.camera.top=110;s.camera.bottom=-110;s.camera.near=20;s.camera.far=520;s.bias=-0.0004;s.normalBias=0.5;s.camera.updateProjectionMatrix();}
   scene.traverse(o=>{if(o.material){if(Array.isArray(o.material))o.material.forEach(m=>m.needsUpdate=true);else o.material.needsUpdate=true;}});}
 el.optSens.value=SAVE.sens;el.optSnd.checked=SAVE.snd;el.optShadow.checked=SAVE.shadow;P.sens=SAVE.sens/100;AU.on=SAVE.snd;if(SAVE.shadow!==Q.shadows)setShadows(SAVE.shadow);
-const optDiff=$('optDiff');function setDiff(d){SAVE.diff=d;G.diff=[.55,.85,1.15][d];G.dmgK=[.8,1,1.15][d];}
+const optDiff=$('optDiff');function setDiff(d){SAVE.diff=d;if(MP.on&&MP.phase==='play')return;G.diff=[.55,.85,1.15][d];G.dmgK=[.8,1,1.15][d];} // a multiplayer round keeps the difficulty its host chose
 optDiff.value=String(SAVE.diff);setDiff(SAVE.diff|0);optDiff.addEventListener('change',()=>{setDiff(+optDiff.value);saveGame();});
 el.optSens.addEventListener('input',()=>{SAVE.sens=+el.optSens.value;P.sens=SAVE.sens/100;saveGame();});
 el.optSnd.addEventListener('change',()=>{SAVE.snd=el.optSnd.checked;setSound(SAVE.snd);saveGame();});
@@ -22,8 +22,8 @@ function enterPlay(ev){el.menu.hidden=true;el.mapOver.hidden=true;el.hud.hidden=
   if(ev&&(ev.pointerType?ev.pointerType==='mouse':!isTouch))lock();}
 function pause(){if(G.state!=='play')return;
   // a multiplayer game cannot stop for one player: the menu opens over it and the game goes on
-  if(MP.on){unlock();if(!G.menuUp){G.menuUp=true;IN.fire=false;IN.useHeld=false;P.wantAds=false;showMenu('pause','Game menu','The game goes on while this menu is open.',mpStatList());}return;}
-  G.state='pause';IN.fire=false;IN.useHeld=false;showMenu('pause','Paused',G.mode==='mission'?OBJ.text+'.':'Survival, wave '+(MS.surv?MS.surv.wave:0)+'.',statList());}
+  if(MP.on){unlock();if(!G.menuUp){G.menuUp=true;IN.fire=false;IN.useHeld=false;P.wantAds=false;el.hud.hidden=true;showMenu('pause','Game menu','The game goes on while this menu is open.',mpStatList());}return;}
+  G.state='pause';IN.fire=false;IN.useHeld=false;el.hud.hidden=true;showMenu('pause','Paused',G.mode==='mission'?OBJ.text+'.':'Survival, wave '+(MS.surv?MS.surv.wave:0)+'.',statList());}
 function toMain(){unlock();G.state='menu';G.menuUp=false;G.mode='mission';setDiff(SAVE.diff|0);mpEl.mpBoard.hidden=true;el.hud.hidden=true;resetWorldState();removeJammer(false);for(const a of allies)a.g.visible=false;gunRoot.visible=false;clearFeeds();camera.fov=P.baseFov;camera.updateProjectionMatrix();
   showMenu('main','Operación Insurgentes','A mercenary force has seized the town and the crossroads where Highway 1 turns east for Loreto. Lead fireteam Halcón up Blvd. Benito Juárez, take the Glorieta, and clear the Plaza Principal.');}
 function onPlayerDeath(){if(MP.on){mpDied();return;}G.state='dead';IN.fire=false;unlock();saveGame();}
@@ -88,8 +88,8 @@ tap('btnPause',()=>{unlock();pause();});tap('btnMap',()=>{unlock();openMap();});
 function resize(){const w=window.innerWidth||640,h=window.innerHeight||360;renderer.setSize(w,h,false);camera.aspect=w/h;P.baseFov=w<h?88:74;if(G.state!=='play'){camera.fov=P.baseFov;}camera.updateProjectionMatrix();}
 window.addEventListener('resize',resize);resize();
 // the static town is uploaded once and its buffers are then released, so a lost graphics context means a reload
-canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();saveGame();unlock();G.state='lost';menuMode='lost';el.hud.hidden=true;el.mapOver.hidden=true;el.menuTitle.textContent='Graphics were reset';
-  el.menuMsg.textContent='Your device reclaimed the graphics memory. Reload the page to carry on from your last checkpoint.';el.menuStats.hidden=true;el.btnStart.textContent='Reload';
+canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();saveGame();unlock();G.state='lost';menuMode='lost';G.menuUp=false;if(MP.on||NET.state!=='off')mpLeave();mpClose();mpEl.btnMp.hidden=true;mpEl.mpBoard.hidden=true;el.hud.hidden=true;el.mapOver.hidden=true;el.menuTitle.textContent='Graphics were reset';
+  el.menuMsg.textContent='Your device reclaimed the graphics memory. Reload the page to carry on from your last checkpoint.';el.menuStats.hidden=true;el.btnStart.textContent='Reload';el.btnStart.hidden=false;
   el.btnSurvival.hidden=true;el.btnQuit.hidden=true;el.btnMapMenu.hidden=true;el.controls.hidden=true;el.menu.hidden=false;});
 const BOT={on:false,f:0,s:0,sprint:false};
 function gatherInput(){if(BOT.on){IN.f=BOT.f;IN.s=BOT.s;IN.sprint=BOT.sprint;return;}if(G.menuUp){IN.f=0;IN.s=0;IN.sprint=false;IN.fire=false;return;}let f=0,s=0;if(keys.KeyW||keys.ArrowUp)f+=1;if(keys.KeyS||keys.ArrowDown)f-=1;if(keys.KeyD||keys.ArrowRight)s+=1;if(keys.KeyA||keys.ArrowLeft)s-=1;
@@ -113,7 +113,7 @@ function tick(now){requestAnimationFrame(tick);if(G.state==='lost')return;const 
       showMenu('dead','You are down',G.mode==='mission'?'Halcón, regroup. You restart at the last checkpoint with your squad.':'You held the Glorieta through wave '+(MS.surv?MS.surv.wave:0)+'.',statList());}}
   fxUpdate(dt);sky.position.copy(camera.position);sierra.position.set(camera.position.x,0,camera.position.z);sunSprite.position.copy(camera.position).addScaledVector(SUN,2000);if(Q.shadows)sunFollow(camera.position.x,camera.position.z);
   cullChunks(camera.position.x,camera.position.z);renderer.render(scene,camera);}
-window.__game={buildMs:Math.round(performance.now()-T0),sim:(n,dt)=>{for(let i=0;i<n;i++){frame++;if(G.state==='play')simStep(dt,.01);else if(G.state==='dead'){updAI(dt);updNades(dt);updProps(dt);}fxUpdate(dt);}},setShadows,BOT,makeField,flow,flowDir,los,eyeY,chestY,camera,renderer,scene,belfries,buildings,lowCover,G,P,MS,OBJ,foes,allies,ST,IN,startMission,startSurvival,stageStart,stageDone,enterPlay,MP,NET,ARENAS,mpCreate,mpJoin,mpStart,mpSetCfg,mpSetMe,mpLeave,mpEvent,mpOpen,hurt,toMain,pause,explode,humans,damageProp,picks,nades,colliders,Q,WDEF,addPick,explode,spawnWave,restartCheckpoint,SAVE,showWeapon,addSoldier,animSoldier,clearSoldiers,gunRoot,updCamera,cullChunks,cars,BLOCKS,chunkMeshes,freeSpot,
+window.__game={buildMs:Math.round(performance.now()-T0),sim:(n,dt)=>{for(let i=0;i<n;i++){frame++;if(G.state==='play')simStep(dt,.01);else if(G.state==='dead'){updAI(dt);updNades(dt);updProps(dt);}fxUpdate(dt);}},setShadows,BOT,makeField,flow,flowDir,los,eyeY,chestY,camera,renderer,scene,belfries,buildings,lowCover,G,P,MS,OBJ,foes,allies,ST,IN,startMission,startSurvival,stageStart,stageDone,enterPlay,MP,NET,ARENAS,mpCreate,mpJoin,mpStart,mpSetCfg,mpSetMe,mpLeave,mpEvent,mpOpen,hurt,toMain,pause,explode,humans,damageProp,picks,nades,colliders,Q,WDEF,addPick,explode,spawnWave,restartCheckpoint,SAVE,showWeapon,addSoldier,animSoldier,clearSoldiers,gunRoot,updCamera,cullChunks,cars,BLOCKS,chunkMeshes,freeSpot,heli,
   cam:(x,y,z,tx,ty,tz)=>{camera.position.set(x,y,z);camera.lookAt(tx,ty,tz);}};
 el.btnStart.disabled=false;el.btnMapMenu.hidden=false;toMain();mpAuto();requestAnimationFrame(tick);
 })();

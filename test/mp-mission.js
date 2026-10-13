@@ -1,5 +1,5 @@
 // Two bots play the whole story mission together, host and guest, at about four times real time.
-// node mp-mission.js [acc] [minutes]     (acc 0 = real time)
+// node mp-mission.js [acc] [minutes] [first stage]     (acc 0 = real time)
 const {lab,sleep}=require('./mplab');const fs=require('fs'),path=require('path');
 (async()=>{const acc=process.argv[2]===undefined?3:+process.argv[2],mins=+(process.argv[3]||7);
   const L=await lab(2,{players:[{},{mobile:true}]});const {ev,st,ui,until,ok}=L,bot=fs.readFileSync(path.join(__dirname,'botmp.js'),'utf8');for(const k of [0,1])await ev(k,bot);
@@ -21,6 +21,7 @@ const {lab,sleep}=require('./mplab');const fs=require('fs'),path=require('path')
   ok(flags.jamGuest&&flags.jamGone,'the guest saw the jammer truck, and saw it gone after the charge',flags);
   ok(flags.plantSub,'the guest followed the planting and the countdown');ok(flags.heliGuest,'the guest got the helicopter stages');
   ok(u1.stats.length===2,'results list both players',u1.stats);
+  const h1=await ev(1,"({on:__game.heli.on,vis:!!(__game.heli.g&&__game.heli.g.visible)})");ok(!h1.on&&!h1.vis,'the helicopter is put away on the guest\'s results screen',h1);
   console.log('  host log: '+JSON.stringify(await ev(0,'__botmp.log')).slice(0,900));console.log('  guest log: '+JSON.stringify(await ev(1,'__botmp.log')).slice(0,900));
   console.log('  host table: '+JSON.stringify(await ev(0,"Array.from(__game.MP.players.values(),p=>[p.name,p.k,p.d,p.sc])"))+'  checkpoint restarts seen by the guest: '+flags.ckpt);
   ok((await st(0)).errN===0&&(await st(1)).errN===0,'no errors inside the game loop');

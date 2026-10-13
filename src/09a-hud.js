@@ -114,7 +114,7 @@ function showMenu(mode,title,msg,stats){menuMode=mode;el.menuTitle.textContent=t
   el.btnStart.hidden=mode==='mpend'&&!MP.host;
   el.btnSurvival.textContent=mode==='pause'&&mission?'Restart checkpoint':'Survival';el.btnSurvival.hidden=(mode==='pause'&&!mission)||mode==='dead'||mp;
   el.btnQuit.hidden=(mode==='win'&&!mp)||(mode==='main'&&!(SAVE.stage>0));el.btnQuit.textContent=mode==='main'?'New mission':mp?'Leave game':'Quit to menu';
-  mpEl.btnMp.hidden=!NET.ok||mode!=='main';el.btnMapMenu.hidden=mode==='mpend';
+  mpEl.btnMp.hidden=!NET.ok||mode!=='main';el.btnMapMenu.hidden=mode==='mpend';$('lOptDiff').hidden=mp; // in a multiplayer game the host's lobby sets the difficulty
   el.controls.hidden=mode==='dead'||mode==='win'||mode==='mpend';el.menu.hidden=false;el.menu.scrollTop=0;}
 function statList(){const s=G.stats,acc=s.shots?Math.round(s.hits/s.shots*100):0,m=Math.floor(s.time/60),sec=Math.floor(s.time%60);
   return[['Score',G.score],['Kills',s.kills],['Headshots',s.heads],['Accuracy',acc+'%'],['Time',m+':'+String(sec).padStart(2,'0')]];}

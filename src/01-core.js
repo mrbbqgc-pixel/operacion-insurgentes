@@ -11,7 +11,7 @@ function rnd(){seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;}
 const rr=(a,b)=>a+rnd()*(b-a),pick=a=>a[Math.floor(rnd()*a.length)];
 const R=Math.random,R2=(a,b)=>a+R()*(b-a),RP=a=>a[Math.floor(R()*a.length)];
 const clamp=(v,a,b)=>v<a?a:v>b?b:v,lerp=(a,b,t)=>a+(b-a)*t;
-function angDiff(a,b){let d=a-b;while(d>PI)d-=TAU;while(d<-PI)d+=TAU;return d;}
+function angDiff(a,b){let d=a-b;if(d>64||d<-64)d-=TAU*Math.round(d/TAU);while(d>PI)d-=TAU;while(d<-PI)d+=TAU;return d;}
 
 const canvas=$('view');
 let renderer;

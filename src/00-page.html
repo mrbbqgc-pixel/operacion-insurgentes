@@ -113,7 +113,7 @@ h1{margin:0;font:400 clamp(36px,8.6vw,64px)/.95 var(--display);letter-spacing:.0
 .alt:hover{border-color:var(--bone)}
 button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--bone);outline-offset:3px}
 #opts{display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center;font-size:14px;letter-spacing:.08em;border-top:1px solid var(--rule);padding-top:10px;width:100%}
-#opts label{display:flex;align-items:center;gap:8px}
+#opts label{display:flex;align-items:center;gap:8px}#opts label[hidden]{display:none}
 #opts input[type=range]{width:110px;accent-color:var(--sun)}
 #opts input[type=checkbox]{accent-color:var(--sun);width:16px;height:16px}
 #opts select{font:600 14px var(--ui);letter-spacing:.06em;color:var(--bone);background:var(--ink);border:1px solid var(--rule);padding:4px 6px}
@@ -143,8 +143,9 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 #mpUi select{font:600 14px var(--ui);letter-spacing:.06em;color:var(--bone);background:var(--ink);border:1px solid var(--rule);padding:4px 6px;max-width:230px}
 #mpUi select:disabled{opacity:.75}
 #mpList{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:3px 6px;width:100%}
-#mpList li{display:flex;justify-content:space-between;gap:10px;background:var(--panel);padding:4px 10px;font-size:15px;border-left:3px solid var(--rule)}
-#mpList li span{opacity:.8;font-size:13px;letter-spacing:.08em}
+#mpList li{display:flex;justify-content:space-between;align-items:baseline;gap:10px;background:var(--panel);padding:4px 10px;font-size:15px;border-left:3px solid var(--rule);min-width:0}
+#mpList li b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#mpList li span{opacity:.8;font-size:13px;letter-spacing:.08em;white-space:nowrap}
 #mpList li.t1{border-left-color:var(--sky)}#mpList li.t2{border-left-color:var(--blood)}#mpList li.me b{color:var(--sun)}
 #mpMsg{margin:0;font-size:14.5px;line-height:1.35;max-width:44ch;color:var(--sun)}#mpMsg:empty{display:none}
 #mpBoard{display:flex;flex-direction:column;gap:2px;border-top:1px solid var(--rule);padding-top:5px;font-size:12px;letter-spacing:.08em}
@@ -154,7 +155,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 #mpBoard .t2 span:first-child::before{background:var(--blood)}
 #card.mp>#menuMsg,#card.mp>#btns,#card.mp>#opts,#card.mp>#controls,#card.mp>.fine,#card.mp>#menuStats,#card.mp>.tip{display:none}
 @media (max-height:440px){#card{gap:8px}h1{font-size:32px}#menuMsg{font-size:14.5px}#controls{display:none}.fine{display:none}}
-@media (max-height:440px){#card.mp .eyebrow{display:none}#card.mp h1{font-size:24px}#mpUi,#mpHome,#mpLobby{gap:8px}#mpCodeBig{font-size:26px}}
+@media (max-height:440px){#card.mp .eyebrow{display:none}#card.mp h1{font-size:24px}#card.mp.room h1{display:none}#mpUi,#mpHome,#mpLobby{gap:8px}#mpCodeBig{font-size:26px}#mpCfg{gap:6px 16px;padding-top:8px}#mpList li{padding:2px 10px}}
 @media (max-height:440px){#card{max-width:640px}#btns{gap:8px}.alt{padding:9px 12px}}
 @media (max-width:560px){#kills{top:36%}#leftCol{width:min(210px,50vw)}#compass{width:30vw}#area{display:none}}
 @media (max-height:440px){#mini{width:92px;height:92px}#objText{font-size:14px}#feed p{font-size:13px}}
@@ -194,9 +195,9 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
     <div id="btns"><button class="cta" id="btnStart" type="button" disabled>Building the town…</button><button class="alt" id="btnSurvival" type="button" hidden>Survival</button><button class="alt" id="btnMp" type="button" hidden>Multiplayer</button><button class="alt" id="btnMapMenu" type="button" hidden>Town map</button><button class="alt" id="btnQuit" type="button" hidden>Quit to menu</button></div>
     <div id="mpUi" hidden>
       <div id="mpHome">
-        <label class="mpf" for="mpName">Your name <input id="mpName" type="text" maxlength="12" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="PLAYER"></label>
+        <label class="mpf" for="mpName">Your name <input id="mpName" type="text" maxlength="12" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" placeholder="PLAYER"></label>
         <div class="mprow" id="mpCreateRow"><button class="cta" id="btnMpCreate" type="button">Create a game</button></div>
-        <div class="mprow"><label class="mpf" for="mpCode">Room code <input id="mpCode" type="text" maxlength="5" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABCDE"></label><button class="alt" id="btnMpJoin" type="button">Join</button></div>
+        <div class="mprow"><label class="mpf" for="mpCode">Room code <input id="mpCode" type="text" maxlength="5" autocomplete="off" autocorrect="off" autocapitalize="characters" spellcheck="false" placeholder="ABCDE"></label><button class="alt" id="btnMpJoin" type="button">Join</button></div>
         <p class="fine" id="mpHow" style="display:block">One player creates a game and sends the invite link or the room code to the others. Up to 8 players, on phones and computers together.</p>
       </div>
       <div id="mpLobby" hidden>
@@ -220,7 +221,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
       <label for="optSens">Look speed <input type="range" id="optSens" min="40" max="200" value="100"></label>
       <label for="optSnd"><input type="checkbox" id="optSnd" checked> Sound</label>
       <label for="optShadow"><input type="checkbox" id="optShadow"> Shadows</label>
-      <label for="optDiff">Difficulty <select id="optDiff"><option value="0">Recruit</option><option value="1">Regular</option><option value="2">Veteran</option></select></label>
+      <label for="optDiff" id="lOptDiff">Difficulty <select id="optDiff"><option value="0">Recruit</option><option value="1">Regular</option><option value="2">Veteran</option></select></label>
     </div>
     <div id="controls">
       <div><h2>Keyboard and mouse</h2><p>WASD move, Shift sprint, C crouch, Space jump. Left click fire, right click aim. R reload, Q swap, G grenade, V knife, F pick up or use, M map, Esc pause.</p></div>
