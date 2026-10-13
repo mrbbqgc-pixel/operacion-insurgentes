@@ -28,7 +28,9 @@ CDN = '<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.m
 assert rest.count(CDN) == 1 and rest.rstrip().endswith('</script>')
 three = rd(os.path.join(here, 'vendor/three.min.js'))
 assert '</script' not in three.lower() and '<!--' not in three and '"128"' in three
-rest = rest.replace(CDN, '<script>' + three.rstrip() + '\n</script>')
+peer = rd(os.path.join(here, 'vendor/peerjs.min.js'))  # browser-to-browser connections for multiplayer; the game page itself does not ask for it
+assert '</script' not in peer.lower() and '<!--' not in peer and 'peerjs' in peer
+rest = rest.replace(CDN, '<script>' + three.rstrip() + '\n</script>\n<script>' + peer.rstrip() + '\n</script>')
 assert 'http://' not in style and 'https://' not in style
 
 FONTS = [('Saira Stencil One', 400, 'saira-stencil-one-latin-400-normal.woff2'),
@@ -68,7 +70,7 @@ if base:
 else:
     head += ['<link rel="icon" type="image/png" href="data:image/png;base64,%s">' % b64(os.path.join(root, 'icon-64.png')),
              '<link rel="apple-touch-icon" href="data:image/png;base64,%s">' % b64(os.path.join(root, 'icon-180.png'))]
-head += ['<!-- Operación Insurgentes. Engine: three.js r128 (MIT). Fonts: Saira Stencil One and Saira Condensed, (c) The Saira Project Authors, SIL Open Font License 1.1. -->',
+head += ['<!-- Operación Insurgentes. Engine: three.js r128 (MIT). Connections: PeerJS 1.5.5 (MIT). Fonts: Saira Stencil One and Saira Condensed, (c) The Saira Project Authors, SIL Open Font License 1.1. -->',
          '<style>',
          'html,body{margin:0;padding:0;overscroll-behavior:none}[hidden]{display:none!important}',
          '.over{overscroll-behavior:contain;touch-action:manipulation}',

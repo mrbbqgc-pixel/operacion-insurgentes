@@ -59,12 +59,14 @@ const flash=new T.Sprite(new T.SpriteMaterial({map:dot,color:0xffc45a,transparen
 const pending=[],fires=[];
 function damageProp(c,dmg){if(!c||!(c.hp>0))return;c.hp-=dmg;if(c.hp<=0){c.hp=0;pending.push({c,t:R2(.05,.3)});}
   else if(c.kind===2&&c.hp<90&&R()<.5)smoke((c.x0+c.x1)/2,1.4,(c.z0+c.z1)/2,.8,1.4);}
-function blowProp(c){const x=(c.x0+c.x1)/2,z=(c.z0+c.z1)/2;
-  if(c.kind===3||c.kind===4){c.off=true;if(c.ref)scene.remove(c.ref);const k=cellOf(x,z);if(k>=0)blocked[k]=0;explode(x,.6,z,c.kind===4?9:7.5,c.kind===4?175:150,true);if(c.kind===4)fires.push({x,y:.4,z,t:9,n:0});}
-  else if(c.kind===2){wreck(c.ref);explode(x,.8,z,6.5,130,true);fires.push({x,y:1,z,t:14,n:0});}}
-function explode(x,y,z,rad,dmg,byPlayer){fxExplosion(x,y,z,rad);sndBoom(x,z);const dp=Math.hypot(x-P.x,z-P.z);shake=Math.max(shake,clamp(1.3-dp/28,0,1));G.flash=Math.max(G.flash,clamp(.5-dp/40,0,.5));
+// rep: this is a copy of something that happened on another player's machine (owner), so it only shows and hurts me
+function blowProp(c,rep,owner){const x=(c.x0+c.x1)/2,z=(c.z0+c.z1)/2;if(c.off||c.wrecked)return;c.hp=0;if(MP.on&&!rep)mpEvent('pb',0,[c.id]);
+  if(c.kind===3||c.kind===4){c.off=true;if(c.ref)scene.remove(c.ref);const k=cellOf(x,z);if(k>=0)blocked[k]=0;explode(x,.6,z,c.kind===4?9:7.5,c.kind===4?175:150,true,rep,owner);if(c.kind===4)fires.push({x,y:.4,z,t:9,n:0});}
+  else if(c.kind===2){c.wrecked=true;wreck(c.ref);explode(x,.8,z,6.5,130,true,rep,owner);fires.push({x,y:1,z,t:14,n:0});}}
+function explode(x,y,z,rad,dmg,byPlayer,rep,owner){fxExplosion(x,y,z,rad);sndBoom(x,z);const dp=Math.hypot(x-P.x,z-P.z);shake=Math.max(shake,clamp(1.3-dp/28,0,1));G.flash=Math.max(G.flash,clamp(.5-dp/40,0,.5));
   const hit=(tx,ty,tz)=>{const d=Math.hypot(tx-x,ty-y,tz-z);if(d>=rad)return 0;return(1-d/rad)*(los(x,y+.7,z,tx,ty,tz)?1:.25);};
-  if(P.alive){const k=hit(P.x,P.y+1,P.z);if(k>0)hurt(dmg*k*.7,x,z);}
+  if(P.alive){const k=hit(P.x,P.y+1,P.z);if(k>0&&mpBlast(rep,owner))hurt(dmg*k*.7,x,z);}
+  if(rep){noiseEvent(x,z,130);return;} // a copy: its owner's machine deals with soldiers and props
   for(const list of [foes,allies])for(let i=list.length-1;i>=0;i--){const s=list[i];if(!s.alive)continue;const k=hit(s.x,chestY(s),s.z);if(k>0)damageSoldier(s,dmg*k,1,x,z,byPlayer,true);}
   const st=++stamp,i0=clamp(Math.floor((x-rad-BX0)/BS),0,BW-1),i1=clamp(Math.floor((x+rad-BX0)/BS),0,BW-1),j0=clamp(Math.floor((z-rad-BZ0)/BS),0,BH-1),j1=clamp(Math.floor((z+rad-BZ0)/BS),0,BH-1);
   for(let j=j0;j<=j1;j++)for(let i=i0;i<=i1;i++){const l=bins[j*BW+i];for(let q=0;q<l.length;q++){const c=l[q];if(c.st===st||c.off||!(c.hp>0))continue;c.st=st;
@@ -76,7 +78,7 @@ function updProps(dt){for(let k=pending.length-1;k>=0;k--){const p=pending[k];p.
 
 // ---------- grenades
 const nades=[],nadeGeo=new T.SphereGeometry(.07,8,6),nadeMat=L({color:0x2c3323});
-function spawnNade(x,y,z,vx,vy,vz,fuse,byPlayer){const m=new T.Mesh(nadeGeo,nadeMat);m.position.set(x,y,z);scene.add(m);nades.push({m,x,y,z,vx,vy,vz,fuse,byPlayer,rest:false});}
+function spawnNade(x,y,z,vx,vy,vz,fuse,byPlayer){const m=new T.Mesh(nadeGeo,nadeMat),n={m,x,y,z,vx,vy,vz,fuse,byPlayer,rest:false,rep:false,by:0};m.position.set(x,y,z);scene.add(m);nades.push(n);return n;}
 function updNades(dt){for(let k=nades.length-1;k>=0;k--){const n=nades[k];n.fuse-=dt;
   if(!n.rest){n.vy-=14*dt;let rem=dt;
     for(let it=0;it<3&&rem>1e-4;it++){const sp=Math.hypot(n.vx,n.vy,n.vz);if(sp<.05){n.rest=true;break;}const dx=n.vx/sp,dy=n.vy/sp,dz=n.vz/sp,step=sp*rem,t=rayWorld(n.x,n.y,n.z,dx,dy,dz,step+.08);
@@ -85,7 +87,8 @@ function updNades(dt){for(let k=nades.length-1;k>=0;k--){const n=nades[k];n.fuse
         if(sp>3)sndUi('pin');if(ny>.5&&Math.abs(n.vy)<1.3){n.vy=0;if(Math.hypot(n.vx,n.vz)<.6){n.rest=true;break;}}}
       else{n.x+=dx*step;n.y+=dy*step;n.z+=dz*step;rem=0;}}
     if(n.y<.07)n.y=.07;n.m.position.set(n.x,n.y,n.z);}
-  if(n.fuse<=0){scene.remove(n.m);nades.splice(k,1);explode(n.x,n.y,n.z,8.5,170,n.byPlayer);}}}
+  if(n.fuse<=0){if(n.rep&&n.fuse>-1.5)continue; // a copy waits for its owner's word; it is tidied away if none comes
+    scene.remove(n.m);nades.splice(k,1);if(!n.rep){explode(n.x,n.y,n.z,8.5,170,n.byPlayer);if(MP.on)mpBoom(n.x,n.y,n.z,8.5,170,n.byPlayer?0:1);}}}}
 
 // ---------- pickups: dropped weapons, ammo, medkits, supply crates
 const picks=[],pickGeo=new T.BoxGeometry(.5,.5,.5);

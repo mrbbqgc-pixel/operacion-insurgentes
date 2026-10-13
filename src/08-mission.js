@@ -122,8 +122,9 @@ function stageUpdate(dt){const st=MS.st;if(!st)return;
   OBJ.prog=clamp(MS.prog,0,1);}
 function resetWorldState(){clearSoldiers();clearPicks();for(const n of nades)scene.remove(n.m);nades.length=0;waveQ.length=0;hideHeli();G.arcs.length=0;G.lkp.age=99;G.vig=0;G.supp=0;
   P.vx=P.vz=P.vy=0;P.hp=100;P.alive=true;P.stam=1;P.crouching=false;P.crouch=0;P.ads=0;P.wantAds=false;P.reloading=false;P.swapT=0;P.swapTo=-1;P.meleeT=0;P.recoil=0;P.pitch=0;P.punch=0;P.roll=0;P.hurtT=9;
-  IN.fire=false;IN.useHeld=false;}
-function placeSquad(){const names=['REYES','LUNA'];while(allies.length<2){addSoldier(0,'ally',P.x,P.z,{name:names[allies.length],aware:true});}
+  IN.fire=false;IN.useHeld=false;P.spawnT=0;}
+function placeSquad(){if(MP.on){for(const a of allies)removeSoldier(a);allies.length=0;return;} // the other players are the squad
+  const names=['REYES','LUNA'];while(allies.length<2){addSoldier(0,'ally',P.x,P.z,{name:names[allies.length],aware:true});}
   allies.forEach((a,k)=>{const p=spotNear(P.x+Math.sin(P.yaw)*4,P.z+Math.cos(P.yaw)*4,5,30)||[P.x,P.z];a.x=p[0];a.z=p[1];a.hp=a.maxHp;a.alive=true;a.down=false;a.target=null;a.up.rotation.z=0;a.g.position.set(a.x,0,a.z);a.g.visible=true;});}
 function startMission(stage){G.mode='mission';resetWorldState();removeJammer(false);const st=ST[stage],sp=st.spawn;P.x=sp[0];P.z=sp[1];P.y=0;P.yaw=sp[2];
   giveLoadout();if(stage>0)for(const w of P.slots)w.res=Math.round(WDEF[w.id].max*.72);

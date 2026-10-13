@@ -39,6 +39,9 @@ function drawMini(){const k=MS_/(MRAD*2),c=MS_/2,Rm=MRAD*1.45;mg.clearRect(0,0,M
   mg.strokeStyle=COL.ink;mg.lineWidth=1.5;
   for(const s of foes){if(!s.alive||s.revealT<=0)continue;const q=pt(s.x,s.z);if(!q)continue;mg.fillStyle=COL.blood;mg.globalAlpha=clamp(s.revealT,.25,1);mg.beginPath();mg.arc(q[0],q[1],5,0,TAU);mg.fill();mg.stroke();mg.globalAlpha=1;}
   for(const s of allies){const q=pt(s.x,s.z,true);mg.fillStyle=s.down?COL.blood:COL.sky;mg.beginPath();mg.arc(q[0],q[1],4.5,0,TAU);mg.fill();mg.stroke();}
+  if(MP.on){for(const s of MP.mates){if(!s.g.visible)continue;const q=pt(s.x,s.z,true);mg.fillStyle=s.alive?COL.sky:COL.blood;mg.beginPath();mg.arc(q[0],q[1],4.5,0,TAU);mg.fill();mg.stroke();}
+    for(const s of MP.rivals){if(!s.alive||s.revealT<=0)continue;const q=pt(s.x,s.z);if(!q)continue;mg.fillStyle=COL.blood;mg.globalAlpha=clamp(s.revealT,.25,1);mg.beginPath();mg.arc(q[0],q[1],5,0,TAU);mg.fill();mg.stroke();mg.globalAlpha=1;}
+    if(mpMode().vs){const A=arena();mg.strokeStyle=COL.sun;mg.lineWidth=2.5;mg.strokeRect((A.x0-P.x)*k,(A.z0-P.z)*k,(A.x1-A.x0)*k,(A.z1-A.z0)*k);mg.strokeStyle=COL.ink;mg.lineWidth=1.5;}}
   if(OBJ.show){const q=pt(OBJ.x,OBJ.z,true);mg.fillStyle=COL.sun;mg.save();mg.translate(q[0],q[1]);mg.rotate(PI/4);mg.fillRect(-5,-5,10,10);mg.strokeRect(-5,-5,10,10);mg.restore();}
   // real north on the rim
   mg.fillStyle=COL.bone;mg.font='700 20px Arial,sans-serif';mg.textAlign='center';mg.textBaseline='middle';const nx=-SB*(c-13),nz=-CB*(c-13);mg.save();mg.translate(nx,nz);mg.rotate(-P.yaw);mg.fillText('N',0,0);mg.restore();
@@ -77,7 +80,7 @@ function hud(dt){const w=curW(),D=WDEF[w.id];hudK++;
   for(const t of G.toasts)killFeed('',t.t);G.toasts.length=0;
   for(let k=killL.length-1;k>=0;k--){const f=killL[k];f.t-=dt;if(f.t<=0){el.kills.removeChild(f.p);killL.splice(k,1);}else if(f.t<.6)f.p.style.opacity=(f.t/.6).toFixed(2);}
   if(bannerT>0){bannerT-=dt;if(bannerT<=0)el.banner.classList.remove('on');}
-  drawWaypoint();if(hudK%2===0)drawMini();if(hudK%3===0)drawCompass();
+  if(MP.on)mpHud(dt);drawWaypoint();if(hudK%2===0)drawMini();if(hudK%3===0)drawCompass();
   if(hudK%20===0){const ll=latlon(P.x,P.z);setT(el.area,colonia(P.x,P.z)+' · '+ll[0].toFixed(4)+'°N '+ll[1].toFixed(4)+'°W');}}
 // ---------- tactical map
 function drawBigMap(){if(el.bigmap.width!==MAPW){el.bigmap.width=MAPW;el.bigmap.height=MAPH;}const g=el.bigmap.getContext('2d'),X=x=>x-MX0,Z=z=>z-MZ0;g.drawImage(mapC,0,0);g.textAlign='center';g.textBaseline='middle';
@@ -98,15 +101,19 @@ function drawBigMap(){if(el.bigmap.width!==MAPW){el.bigmap.width=MAPW;el.bigmap.
   g.font='700 20px Arial,sans-serif';g.fillText('N',0,26);g.restore();
   if(G.state!=='menu'&&G.state!=='win'){if(OBJ.show){g.fillStyle=COL.sun;g.strokeStyle=COL.ink;g.lineWidth=3;g.save();g.translate(X(OBJ.x),Z(OBJ.z));g.rotate(PI/4);g.fillRect(-11,-11,22,22);g.strokeRect(-11,-11,22,22);g.restore();}
     for(const a of allies){g.fillStyle=COL.sky;g.beginPath();g.arc(X(a.x),Z(a.z),7,0,TAU);g.fill();}
+    if(MP.on){for(const a of MP.mates)if(a.g.visible){g.fillStyle=a.alive?COL.sky:COL.blood;g.beginPath();g.arc(X(a.x),Z(a.z),7,0,TAU);g.fill();}
+      if(mpMode().vs){const A=arena();g.strokeStyle=COL.sun;g.lineWidth=4;g.strokeRect(X(A.x0),Z(A.z0),A.x1-A.x0,A.z1-A.z0);}}
     g.save();g.translate(X(P.x),Z(P.z));g.rotate(-P.yaw);g.fillStyle='#fff';g.strokeStyle=COL.ink;g.lineWidth=3;g.beginPath();g.moveTo(0,-16);g.lineTo(11,12);g.lineTo(0,6);g.lineTo(-11,12);g.closePath();g.fill();g.stroke();g.restore();}}
 // ---------- menus
 let menuMode='main';
 function showMenu(mode,title,msg,stats){menuMode=mode;el.menuTitle.textContent=title;el.menuMsg.textContent=msg;el.menuStats.hidden=!stats;el.menuStats.textContent='';
   if(stats)stats.forEach(s=>{const d=document.createElement('div'),a=document.createElement('dt'),b=document.createElement('dd');a.textContent=s[0];b.textContent=s[1];d.append(a,b);el.menuStats.append(d);});
-  const mission=G.mode==='mission';
-  el.btnStart.textContent=mode==='main'?(SAVE.stage>0?'Continue mission':'Start mission'):mode==='pause'?'Resume':mode==='dead'?(mission?'Retry from checkpoint':'Try again'):'Play again';
-  el.btnSurvival.textContent=mode==='pause'&&mission?'Restart checkpoint':'Survival';el.btnSurvival.hidden=(mode==='pause'&&!mission)||mode==='dead';
-  el.btnQuit.hidden=mode==='win'||(mode==='main'&&!(SAVE.stage>0));el.btnQuit.textContent=mode==='main'?'New mission':'Quit to menu';
-  el.controls.hidden=mode==='dead'||mode==='win';el.menu.hidden=false;el.menu.scrollTop=0;}
+  const mission=G.mode==='mission',mp=MP.on&&mode!=='main';mpClose();
+  el.btnStart.textContent=mode==='main'?(SAVE.stage>0?'Continue mission':'Start mission'):mode==='pause'?'Resume':mode==='dead'?(mission?'Retry from checkpoint':'Try again'):mode==='mpend'?'Back to lobby':'Play again';
+  el.btnStart.hidden=mode==='mpend'&&!MP.host;
+  el.btnSurvival.textContent=mode==='pause'&&mission?'Restart checkpoint':'Survival';el.btnSurvival.hidden=(mode==='pause'&&!mission)||mode==='dead'||mp;
+  el.btnQuit.hidden=(mode==='win'&&!mp)||(mode==='main'&&!(SAVE.stage>0));el.btnQuit.textContent=mode==='main'?'New mission':mp?'Leave game':'Quit to menu';
+  mpEl.btnMp.hidden=!NET.ok||mode!=='main';el.btnMapMenu.hidden=mode==='mpend';
+  el.controls.hidden=mode==='dead'||mode==='win'||mode==='mpend';el.menu.hidden=false;el.menu.scrollTop=0;}
 function statList(){const s=G.stats,acc=s.shots?Math.round(s.hits/s.shots*100):0,m=Math.floor(s.time/60),sec=Math.floor(s.time%60);
   return[['Score',G.score],['Kills',s.kills],['Headshots',s.heads],['Accuracy',acc+'%'],['Time',m+':'+String(sec).padStart(2,'0')]];}

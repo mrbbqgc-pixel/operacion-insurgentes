@@ -127,13 +127,41 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 #mapHead h2{margin:0;font:400 22px var(--display);letter-spacing:.06em;text-transform:uppercase}
 #bigmap{display:block;width:max(100%,780px);height:auto}
 #mapNote{margin:0;font-size:13px;opacity:.8;max-width:900px}
+#mpUi,#mpHome,#mpLobby{display:flex;flex-direction:column;gap:11px;width:100%;align-items:flex-start}
+#mpUi[hidden],#mpHome[hidden],#mpLobby[hidden]{display:none}
+.mprow{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+.mpf{display:flex;flex-direction:column;gap:3px;font-size:12px;letter-spacing:.14em;text-transform:uppercase}
+#mpUi input[type=text]{font:600 18px var(--ui);letter-spacing:.1em;color:var(--bone);background:rgba(21,17,12,.7);border:1px solid var(--rule);border-radius:0;padding:8px 10px;width:170px;
+  text-transform:uppercase;-webkit-user-select:text;user-select:text}
+#mpUi #mpCode{width:112px}
+#mpCodeBig{font:400 34px/1 var(--display);letter-spacing:.14em;color:var(--sun);-webkit-user-select:text;user-select:text}
+#mpCfg{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;border-top:1px solid var(--rule);padding-top:10px;width:100%}
+#mpCfg .alt{padding:6px 12px;font-size:13px}
+#mpHome.inv #mpCreateRow,#mpHome.inv #mpHow{display:none!important}
+#mpCfg label,#lCls{display:flex;align-items:center;gap:8px;font-size:14px;letter-spacing:.08em}
+#mpCfg label[hidden],#lCls[hidden]{display:none}
+#mpUi select{font:600 14px var(--ui);letter-spacing:.06em;color:var(--bone);background:var(--ink);border:1px solid var(--rule);padding:4px 6px;max-width:230px}
+#mpUi select:disabled{opacity:.75}
+#mpList{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:3px 6px;width:100%}
+#mpList li{display:flex;justify-content:space-between;gap:10px;background:var(--panel);padding:4px 10px;font-size:15px;border-left:3px solid var(--rule)}
+#mpList li span{opacity:.8;font-size:13px;letter-spacing:.08em}
+#mpList li.t1{border-left-color:var(--sky)}#mpList li.t2{border-left-color:var(--blood)}#mpList li.me b{color:var(--sun)}
+#mpMsg{margin:0;font-size:14.5px;line-height:1.35;max-width:44ch;color:var(--sun)}#mpMsg:empty{display:none}
+#mpBoard{display:flex;flex-direction:column;gap:2px;border-top:1px solid var(--rule);padding-top:5px;font-size:12px;letter-spacing:.08em}
+#mpBoard[hidden]{display:none}
+#mpBoard div{display:flex;justify-content:space-between;gap:8px}#mpBoard .me{color:var(--sun)}
+#mpBoard .t1 span:first-child::before,#mpBoard .t2 span:first-child::before{content:"";display:inline-block;width:7px;height:7px;margin-right:5px;background:var(--sky)} /* t1 = my side, t2 = the other side */
+#mpBoard .t2 span:first-child::before{background:var(--blood)}
+#card.mp>#menuMsg,#card.mp>#btns,#card.mp>#opts,#card.mp>#controls,#card.mp>.fine,#card.mp>#menuStats,#card.mp>.tip{display:none}
 @media (max-height:440px){#card{gap:8px}h1{font-size:32px}#menuMsg{font-size:14.5px}#controls{display:none}.fine{display:none}}
+@media (max-height:440px){#card.mp .eyebrow{display:none}#card.mp h1{font-size:24px}#mpUi,#mpHome,#mpLobby{gap:8px}#mpCodeBig{font-size:26px}}
+@media (max-height:440px){#card{max-width:640px}#btns{gap:8px}.alt{padding:9px 12px}}
 @media (max-width:560px){#kills{top:36%}#leftCol{width:min(210px,50vw)}#compass{width:30vw}#area{display:none}}
 @media (max-height:440px){#mini{width:92px;height:92px}#objText{font-size:14px}#feed p{font-size:13px}}
 </style>
 <canvas id="view"></canvas>
 <div id="hud" hidden>
-  <div id="leftCol"><div id="objPanel"><span class="lbl">Objective</span><div id="objText"></div><div id="objBar"><i id="objFill"></i></div><div id="squad"></div></div><div id="feed"></div></div>
+  <div id="leftCol"><div id="objPanel"><span class="lbl">Objective</span><div id="objText"></div><div id="objBar"><i id="objFill"></i></div><div id="squad"></div><div id="mpBoard" hidden></div></div><div id="feed"></div></div>
   <div id="topc"><canvas id="compass" width="680" height="52"></canvas><div id="area"></div></div>
   <div id="tr"><canvas id="mini" width="236" height="236"></canvas><div id="trb"><button class="hb" id="btnMap" type="button">MAP</button><button class="hb" id="btnPause" type="button">PAUSE</button></div></div>
   <div id="kills"></div>
@@ -163,7 +191,31 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
     <h1 id="menuTitle">Operación Insurgentes</h1>
     <p id="menuMsg">A mercenary force has seized the town and the crossroads where Highway 1 turns east for Loreto. Lead fireteam Halcón up Blvd. Benito Juárez, take the Glorieta, and clear the Plaza Principal.</p>
     <dl id="menuStats" hidden></dl>
-    <div id="btns"><button class="cta" id="btnStart" type="button" disabled>Building the town…</button><button class="alt" id="btnSurvival" type="button" hidden>Survival</button><button class="alt" id="btnMapMenu" type="button" hidden>Town map</button><button class="alt" id="btnQuit" type="button" hidden>Quit to menu</button></div>
+    <div id="btns"><button class="cta" id="btnStart" type="button" disabled>Building the town…</button><button class="alt" id="btnSurvival" type="button" hidden>Survival</button><button class="alt" id="btnMp" type="button" hidden>Multiplayer</button><button class="alt" id="btnMapMenu" type="button" hidden>Town map</button><button class="alt" id="btnQuit" type="button" hidden>Quit to menu</button></div>
+    <div id="mpUi" hidden>
+      <div id="mpHome">
+        <label class="mpf" for="mpName">Your name <input id="mpName" type="text" maxlength="12" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="PLAYER"></label>
+        <div class="mprow" id="mpCreateRow"><button class="cta" id="btnMpCreate" type="button">Create a game</button></div>
+        <div class="mprow"><label class="mpf" for="mpCode">Room code <input id="mpCode" type="text" maxlength="5" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="ABCDE"></label><button class="alt" id="btnMpJoin" type="button">Join</button></div>
+        <p class="fine" id="mpHow" style="display:block">One player creates a game and sends the invite link or the room code to the others. Up to 8 players, on phones and computers together.</p>
+      </div>
+      <div id="mpLobby" hidden>
+        <div class="mprow"><div><span class="lbl">Room code</span><div id="mpCodeBig">-----</div></div><button class="alt" id="btnMpShare" type="button">Invite friends</button></div>
+        <div id="mpCfg">
+          <label for="mpMode">Mode <select id="mpMode"></select></label>
+          <label for="mpArena" id="lArena">Area <select id="mpArena"></select></label>
+          <label for="mpKills" id="lKills">First to <select id="mpKills"></select></label>
+          <label for="mpMins" id="lMins">Time limit <select id="mpMins"></select></label>
+          <label for="mpDiff" id="lDiff">Difficulty <select id="mpDiff"></select></label>
+          <label for="mpStage" id="lStage">Start at <select id="mpStage"></select></label>
+          <label for="mpCls" id="lCls">Your weapon <select id="mpCls"></select></label>
+          <button class="alt" id="btnMpTeam" type="button">Switch team</button>
+        </div>
+        <ul id="mpList"></ul>
+      </div>
+      <p id="mpMsg" role="status"></p>
+      <div class="mprow"><button class="cta" id="btnMpStart" type="button" hidden>Start</button><button class="alt" id="btnMpBack" type="button">Back</button></div>
+    </div>
     <div id="opts">
       <label for="optSens">Look speed <input type="range" id="optSens" min="40" max="200" value="100"></label>
       <label for="optSnd"><input type="checkbox" id="optSnd" checked> Sound</label>

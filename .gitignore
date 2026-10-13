@@ -8,3 +8,4 @@ src/test-static.html
 test/*.png
 test/*.jpg
 test/static.html
+test/mp-*.png

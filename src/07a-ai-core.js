@@ -32,7 +32,11 @@ function percAlly(s,tick){let best=null,bd=1e9;for(let k=0;k<foes.length;k++){co
   if(best){if(!s.target&&G.calloutT<=0&&P.alive){G.calloutT=10;radio(s.name,'Contact, '+windName(best.x-P.x,best.z-P.z)+'!');}s.target=best;s.seeT=0;s.vis=2;best.revealT=Math.max(best.revealT,1.5);}
   else{s.seeT+=tick;if(s.seeT>1.5)s.target=null;}}
 function dropCover(s){if(s.cover){coverTaken.delete(s.cover.n);s.cover=null;}s.flanked=false;}
-function damageSoldier(s,dmg,zone,fx,fz,byPlayer,explosive,D){if(!s.alive)return;if(s.team===0&&byPlayer&&!explosive)return;
+function damageSoldier(s,dmg,zone,fx,fz,byPlayer,explosive,D){if(!s.alive)return;
+  // stand-ins for other players, and (on a guest's machine) for the host's soldiers: the damage is theirs to apply
+  if(s.remote){if(s.team===1){if(byPlayer)mpHitPlayer(s,dmg,zone,D,explosive);}else if(!byPlayer)mpHurtMate(s,dmg,fx,fz);return;}
+  if(s.net){if(byPlayer)mpFoeHit(s,dmg,zone,D,explosive,fx,fz);return;}
+  if(s.team===0&&byPlayer&&!explosive)return;
   let m=1;if(!explosive){if(zone===0)m=s.kind==='heavy'?1.5:(D?D.head:3);else if(zone===2)m=.75;}if(s.team===0&&byPlayer)m*=.3;
   s.hp-=dmg*m;s.flinch=.22;
   if(s.team===1){if(!s.aware){s.aware=true;s.lowered=false;s.reactT=.3;alertNear(s,30);}if(s.seeT>.5){s.lkx=fx;s.lkz=fz;}

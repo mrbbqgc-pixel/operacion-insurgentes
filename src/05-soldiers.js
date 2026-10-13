@@ -56,34 +56,36 @@ const footShade=new T.MeshBasicMaterial({transparent:true,depthWrite:false,polyg
 const skinMat=L({vertexColors:true,map:solMat.map,skinning:true}),rigCache={};
 const JOINT=[[0,0,0],[0,1,0],[-.3,.47,0],[0,-.36,0],[.3,.47,0],[0,-.36,0],[.12,.36,-.42],[-.12,.9,0],[0,-.46,0],[.12,.9,0],[0,-.46,0]],PARENT=[-1,0,1,2,1,4,1,0,7,0,9];
 // bones: 0 body, 1 upper body, 2/3 left arm and forearm, 4/5 right, 6 weapon, 7/8 left thigh and shin, 9/10 right
-function rigGeo(kind){if(rigCache[kind])return rigCache[kind];const G0=parts(kind),W=[];for(let k=0;k<11;k++){const p=JOINT[k].slice(),q=PARENT[k];if(q>=0){p[0]+=W[q][0];p[1]+=W[q][1];p[2]+=W[q][2];}W.push(p);}
-  const list=[[G0.hips,0,[0,.98,0]],[G0.up,1],[G0.arm,2],[G0.fore,3],[G0.arm,4],[G0.fore,5],[weaponGeo(KW[kind]),6],[G0.thigh,7],[G0.shin,8],[G0.thigh,9],[G0.shin,10]];
+function rigGeo(kind,wid){wid=wid||KW[kind];const key=kind+'/'+wid;if(rigCache[key])return rigCache[key];const G0=parts(kind),W=[];for(let k=0;k<11;k++){const p=JOINT[k].slice(),q=PARENT[k];if(q>=0){p[0]+=W[q][0];p[1]+=W[q][1];p[2]+=W[q][2];}W.push(p);}
+  const list=[[G0.hips,0,[0,.98,0]],[G0.up,1],[G0.arm,2],[G0.fore,3],[G0.arm,4],[G0.fore,5],[weaponGeo(wid),6],[G0.thigh,7],[G0.shin,8],[G0.thigh,9],[G0.shin,10]];
   const p=[],n=[],c=[],u=[],si=[],sw=[],ix=[];
   for(const it of list){const g=it[0],b=it[1],o=it[2]||W[b],P=g.attributes.position,N=g.attributes.normal,Cc=g.attributes.color,U=g.attributes.uv,k=p.length/3;
     for(let i=0;i<P.count;i++){p.push(P.getX(i)+o[0],P.getY(i)+o[1],P.getZ(i)+o[2]);n.push(N.getX(i),N.getY(i),N.getZ(i));c.push(Cc.getX(i),Cc.getY(i),Cc.getZ(i));u.push(U.getX(i),U.getY(i));si.push(b,0,0,0);sw.push(1,0,0,0);}
     for(let i=0;i<g.index.count;i++)ix.push(k+g.index.getX(i));}
   const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(p,3));g.setAttribute('normal',new T.Float32BufferAttribute(n,3));g.setAttribute('color',new T.Float32BufferAttribute(c,3));
   g.setAttribute('uv',new T.Float32BufferAttribute(u,2));g.setAttribute('skinIndex',new T.Uint16BufferAttribute(si,4));g.setAttribute('skinWeight',new T.Float32BufferAttribute(sw,4));g.setIndex(ix);
-  g.boundingSphere=new T.Sphere(new T.Vector3(0,1,0),2.2);return rigCache[kind]=g;}
-function buildSoldier(kind){const g=new T.Group();g.rotation.order='YXZ';const B=[];
+  g.boundingSphere=new T.Sphere(new T.Vector3(0,1,0),2.2);return rigCache[key]=g;}
+function buildSoldier(kind,wid){const g=new T.Group();g.rotation.order='YXZ';const B=[];
   for(let k=0;k<11;k++){const b=new T.Bone();b.position.set(JOINT[k][0],JOINT[k][1],JOINT[k][2]);B.push(b);if(PARENT[k]>=0)B[PARENT[k]].add(b);}
-  g.add(B[0]);g.updateMatrixWorld(true);const mesh=new T.SkinnedMesh(rigGeo(kind),skinMat);mesh.castShadow=true;g.add(mesh);mesh.bind(new T.Skeleton(B));
+  g.add(B[0]);g.updateMatrixWorld(true);const mesh=new T.SkinnedMesh(rigGeo(kind,wid),skinMat);mesh.castShadow=true;g.add(mesh);mesh.bind(new T.Skeleton(B));
   const sh=new T.Mesh(footGeo,footShade);sh.position.y=.03;sh.renderOrder=2;g.add(sh);
   if(kind==='heavy')g.scale.setScalar(1.14);
-  return{g,body:B[0],up:B[1],aL:B[2],fL:B[3],aR:B[4],fR:B[5],wp:B[6],lL:B[7],kL:B[8],lR:B[9],kR:B[10]};}
+  return{g,mesh,body:B[0],up:B[1],aL:B[2],fL:B[3],aR:B[4],fR:B[5],wp:B[6],lL:B[7],kL:B[8],lR:B[9],kR:B[10]};}
 const allyMark=tex(32,32,(g,w,h)=>{g.fillStyle='#8ec1e6';g.strokeStyle='#15110c';g.lineWidth=3;g.beginPath();g.moveTo(16,27);g.lineTo(4,8);g.lineTo(28,8);g.closePath();g.fill();g.stroke();});
 const foes=[],allies=[],corpses=[];
-function addSoldier(team,kind,x,z,o){o=o||{};const m=buildSoldier(kind),K=KIND[kind];
+function addSoldier(team,kind,x,z,o){o=o||{};const m=buildSoldier(kind,o.wid),K=KIND[kind];
   const s={team,kind,K,x,z,y0:o.y0||0,yaw:o.yaw===undefined?R()*TAU:o.yaw,hp:K.hp,maxHp:K.hp,alive:true,sc:kind==='heavy'?1.14:1,
     crouch:0,wantCrouch:false,ph:R()*6,moveAmt:0,mx:0,mz:0,run:false,aimP:0,lowered:!o.aware,
     aware:!!o.aware,spot:0,target:null,seeT:99,lkx:x,lkz:z,cover:null,coverT:0,phase:'hide',phaseT:R2(.3,1.2),pushT:R2(6,12),
     burst:0,burstT:0,shootT:R2(.4,1.2),reactT:0,flinch:0,stuckT:0,lastX:x,lastZ:z,strafe:R()<.5?-1:1,strafeT:R2(1,3),percT:R()*.25,
     post:o.post||{x,z},post2:o.post2||null,patrolT:R2(1,5),goingBack:false,isStatic:!!o.isStatic,aimT:0,nadeT:R2(8,16),revealT:0,
     name:o.name||'',downT:0,deadT:0,fall:1,goal:null,goalT:0,searchT:0,stepD:0,tag:o.tag||'',
-    g:m.g,body:m.body,up:m.up,aL:m.aL,aR:m.aR,fL:m.fL,fR:m.fR,wp:m.wp,lL:m.lL,lR:m.lR,kL:m.kL,kR:m.kR,mark:null};
+    g:m.g,mesh:m.mesh,body:m.body,up:m.up,aL:m.aL,aR:m.aR,fL:m.fL,fR:m.fR,wp:m.wp,lL:m.lL,lR:m.lR,kL:m.kL,kR:m.kR,mark:null};
   s.g.position.set(x,s.y0,z);s.g.rotation.y=s.yaw;
   if(team===0){const sp=new T.Sprite(new T.SpriteMaterial({map:allyMark,depthTest:false,transparent:true,sizeAttenuation:false}));sp.scale.set(.028,.028,1);sp.position.y=2.25;sp.renderOrder=50;s.g.add(sp);s.mark=sp;}
-  scene.add(s.g);(team?foes:allies).push(s);return s;}
+  scene.add(s.g);(o.list||(team?foes:allies)).push(s);return s;}
+// another weapon in the hands of a soldier that already exists (the stand-ins for other players swap weapons)
+function setSoldierWeapon(s,wid){s.mesh.geometry=rigGeo(s.kind,wid);}
 function removeSoldier(s){scene.remove(s.g);}
 // pose and limb animation
 function animSoldier(s,dt){const c=s.crouch,m=s.moveAmt,ph=s.ph,sw=Math.sin(ph)*(s.run?.95:.65)*m;
