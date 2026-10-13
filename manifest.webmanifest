@@ -1,0 +1,23 @@
+{
+ "name": "Operación Insurgentes",
+ "short_name": "Insurgentes",
+ "description": "A first-person shooter set in Ciudad Insurgentes, Baja California Sur, on the town’s real street grid. Plays in the browser on a phone or a computer, nothing to install.",
+ "start_url": "./",
+ "scope": "./",
+ "display": "fullscreen",
+ "orientation": "landscape",
+ "background_color": "#15110c",
+ "theme_color": "#15110c",
+ "icons": [
+  {
+   "src": "icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png"
+  },
+  {
+   "src": "icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png"
+  }
+ ]
+}
