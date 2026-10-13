@@ -5,7 +5,7 @@
 const MODES={ffa:{name:'Versus · free-for-all',vs:true},tdm:{name:'Versus · two teams',vs:true,teams:true},
   surv:{name:'Co-op · survival',coop:true},miss:{name:'Co-op · story mission',coop:true}};
 const MP={on:false,host:false,me:0,phase:'off',cfg:{mode:'ffa',arena:'plaza',kills:15,mins:8,diff:1,stage:0},players:new Map(),nextId:2,
-  rivals:[],mates:[],rx:0,keepT:0,tLeft:0,joinCb:null,away:false,hitBy:0,myShots:[],fireT:0,sendT:0,respT:0,oobT:0,sweepT:0,menuEv:null,endT:0,results:null};
+  rivals:[],mates:[],rx:0,keepT:0,tLeft:0,lseq:0,round:0,joinCb:null,away:false,hitBy:0,myShots:[],fireT:0,sendT:0,respT:0,oobT:0,sweepT:0,menuEv:null,endT:0,results:null};
 // phase: off | lobby | play | end
 const MPMAX=8,MPE={},MPH={}; // MPE: what an event does on a player's machine; MPH: the host's bookkeeping for it
 const mpMode=()=>MODES[MP.cfg.mode]||MODES.ffa;
@@ -22,15 +22,16 @@ const foeCap=()=>Q.maxFoes+(mpCoop()?Math.min(6,2*(MP.players.size-1)):0);
 function cleanName(s){s=String(s==null?'':s).replace(/[^\w \-.áéíóúñÁÉÍÓÚÑüÜ]/g,'').trim().slice(0,12).toUpperCase();return s||'PLAYER';}
 function mpPlayer(id,name){return{id,name:cleanName(name),team:0,cls:0,k:0,d:0,sc:0,alive:false,conn:null,rx:performance.now(),s:null,buf:[],hp:100,w:0,fl:0,x:0,y:0,z:0,
   nx:0,ny:0,nz:0,nyaw:0,npitch:0,out:[],reveal:0,use:false};}
-const mpLobby=()=>[MP.cfg,MP.phase,Array.from(MP.players.values(),p=>[p.id,p.name,p.team,p.cls,p.k,p.d,p.sc])];
-function mpApplyLobby(L){Object.assign(MP.cfg,L[0]);MP.phase=L[1];const seen=new Set();
+// Messages can overtake each other on the way, so lobby states are numbered and rounds are counted: a late one never undoes a newer one.
+const mpLobby=()=>[MP.cfg,MP.phase,Array.from(MP.players.values(),p=>[p.id,p.name,p.team,p.cls,p.k,p.d,p.sc]),MP.host?++MP.lseq:MP.lseq,MP.round];
+function mpApplyLobby(L){if(!MP.host){if((L[3]|0)<MP.lseq)return;MP.lseq=L[3]|0;}Object.assign(MP.cfg,L[0]);MP.phase=L[1];const seen=new Set();
   for(const a of L[2]){let pl=MP.players.get(a[0]);if(!pl){pl=mpPlayer(a[0],a[1]);MP.players.set(a[0],pl);}
     pl.name=cleanName(a[1]);pl.team=a[2]|0;pl.cls=a[3]|0;pl.k=a[4]|0;pl.d=a[5]|0;pl.sc=a[6]|0;seen.add(a[0]);}
   for(const id of Array.from(MP.players.keys()))if(!seen.has(id)){mpForget(MP.players.get(id));MP.players.delete(id);}
   if(MP.phase==='play')mpRelist();mpUi();}
 function mpSmallTeam(){let a=0,b=0;for(const p of MP.players.values()){if(p.team===1)a++;else if(p.team===2)b++;}return a<=b?1:2;}
-function mpBroadcastLobby(){if(!MP.host)return;const L=mpLobby();for(const pl of MP.players.values())netTx(pl.conn,['lobby',L]);mpUi();}
-function mpReset(){for(const pl of MP.players.values())mpForget(pl);MP.players.clear();MP.rivals.length=0;MP.mates.length=0;MP.on=false;MP.host=false;MP.me=0;MP.phase='off';MP.away=false;MP.joinCb=null;MP.results=null;
+function mpBroadcastLobby(){if(!MP.host)return;const L=mpLobby();for(const pl of MP.players.values())netTx(pl.conn,['lobby',L]);if(MP.phase==='play')mpRelist();mpUi();}
+function mpReset(){for(const pl of MP.players.values())mpForget(pl);MP.players.clear();MP.rivals.length=0;MP.mates.length=0;MP.on=false;MP.host=false;MP.me=0;MP.phase='off';MP.lseq=0;MP.round=0;MP.away=false;MP.joinCb=null;MP.results=null;
   NET.onOpen=NET.onFail=NET.onData=NET.onConn=NET.onGone=null;netClose();}
 
 // ---------- host
@@ -57,21 +58,21 @@ function mpSetCfg(k,v){if(!MP.host||MP.phase==='play')return;MP.cfg[k]=v;
 function mpStart(ev){if(!MP.host||MP.phase==='play')return;const M=mpMode();let n=0;
   for(const pl of MP.players.values()){pl.k=0;pl.d=0;pl.sc=0;if(M.teams){if(pl.team!==1&&pl.team!==2)pl.team=1+(n%2);}else pl.team=M.coop?1:0;n++;}
   if(M.teams&&n>1){let a=0;for(const pl of MP.players.values())if(pl.team===1)a++;if(a===0||a===n){n=0;for(const pl of MP.players.values())pl.team=1+(n++%2);}} // nobody plays a team match alone
-  MP.phase='play';MP.menuEv=ev||null;const L=mpLobby(),X=mpStartExtra();for(const pl of MP.players.values())netTx(pl.conn,['start',L,X]);mpBegin(L,X);}
-function mpToLobby(){if(!MP.host)return;MP.phase='lobby';for(const pl of MP.players.values())netTx(pl.conn,['tolobby']);mpBroadcastLobby();mpBackToLobby();}
+  MP.phase='play';MP.round++;MP.menuEv=ev||null;const L=mpLobby(),X=mpStartExtra();for(const pl of MP.players.values())netTx(pl.conn,['start',L,X]);mpBegin(L,X);}
+function mpToLobby(){if(!MP.host)return;MP.phase='lobby';for(const pl of MP.players.values())netTx(pl.conn,['tolobby',MP.round]);mpBroadcastLobby();mpBackToLobby();}
 
 // ---------- guest
 function mpJoin(code,name,cls,done){if(!NET.ok)return;mpReset();MP.joinCb=done;const fin=m=>{const f=MP.joinCb;if(!f)return;MP.joinCb=null;if(m)mpReset();f(m);};
   NET.onFail=fin;
   NET.onOpen=()=>{MP.rx=performance.now();netTx(NET.up,['hello',PV,cleanName(name),cls|0]);setTimeout(()=>fin('The host did not answer. Ask them to check that the game is still open.'),9000);};
-  NET.onData=(c,d)=>{if(!Array.isArray(d))return;MP.rx=performance.now();MP.away=false;const t=d[0];
+  NET.onData=(c,d)=>{if(!Array.isArray(d))return;MP.rx=performance.now();const t=d[0];
     try{if(t==='S')mpSnapshot(d);
       else if(t==='e')mpHandle(String(d[1]),d[2]|0,d.slice(3));
-      else if(t==='welcome'){MP.on=true;MP.host=false;MP.me=d[1]|0;MP.phase='lobby';mpApplyLobby(d[2]);fin('');}
+      else if(t==='welcome'){MP.on=true;MP.host=false;MP.me=d[1]|0;MP.phase='lobby';MP.lseq=0;MP.round=d[2][4]|0;mpApplyLobby(d[2]);fin('');}
       else if(t==='lobby')mpApplyLobby(d[1]);
-      else if(t==='start')mpBegin(d[1],d[2]);
-      else if(t==='end')mpShowEnd(d[1]);
-      else if(t==='tolobby'){MP.phase='lobby';mpBackToLobby();}
+      else if(t==='start'){const r=d[1][4]|0;if(r>MP.round||(r===MP.round&&G.state!=='play')){MP.round=r;mpBegin(d[1],d[2]);}}
+      else if(t==='end'){if((d[2]|0)===MP.round&&!MP.results)mpShowEnd(d[1]);}
+      else if(t==='tolobby'){if((d[1]|0)===MP.round){MP.phase='lobby';mpBackToLobby();}}
       else if(t==='no')fin(String(d[1]));
       else if(t==='kick')mpDropped(String(d[1]||'The host closed the game.'));
     }catch(e){if(!G.errN)console.error(e);G.errN=(G.errN||0)+1;}};
@@ -92,9 +93,10 @@ MPE.left=(from,a)=>{killFeed('',cleanName(a[0])+' left the game');};
 
 // ---------- keeping the line alive, and noticing when someone has gone
 function mpFrame(raw){const now=performance.now();MP.keepT-=raw;
-  if(MP.host){if(MP.keepT<=0){MP.keepT=2;const lim=MP.phase==='play'?15000:40000;for(const pl of Array.from(MP.players.values())){if(pl.id!==MP.me&&now-pl.rx>lim)mpDrop(pl.id);else if(MP.phase!=='play'||G.state!=='play')netTx(pl.conn,['k']);}}}
+  // In the lobby people wander off to send the invite, so silence is forgiven for a long time there; in a match it is not.
+  if(MP.host){if(MP.keepT<=0){MP.keepT=2;const lim=MP.phase==='play'?15000:150000;for(const pl of Array.from(MP.players.values())){if(pl.id!==MP.me&&now-pl.rx>lim)mpDrop(pl.id);else if(MP.phase!=='play'||G.state!=='play')netTx(pl.conn,['k']);}}}
   else{if(MP.keepT<=0){MP.keepT=2;if(MP.phase!=='play'||G.state!=='play')netTx(NET.up,['k']);}
-    MP.away=now-MP.rx>3500;if(now-MP.rx>45000)mpDropped('The connection to the host was lost.');}}
+    const aw=now-MP.rx>6000;if(aw!==MP.away){MP.away=aw;mpUi();}if(now-MP.rx>(MP.phase==='play'?20000:150000))mpDropped('The connection to the host was lost.');}}
 // timers keep running in a tab that is not in front (on a computer at least), so the line stays up while that player's game stands still
 setInterval(()=>{if(!MP.on||!document.hidden)return;if(MP.host){for(const pl of MP.players.values())netTx(pl.conn,['k']);}else netTx(NET.up,['k']);},2500);
 window.addEventListener('pagehide',()=>{if(MP.on){if(MP.host){for(const pl of MP.players.values())netTx(pl.conn,['kick','The host closed the game.']);}else netTx(NET.up,['bye']);}});

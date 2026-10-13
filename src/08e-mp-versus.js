@@ -44,7 +44,7 @@ function vsCheck(){if(!MP.host||MP.phase!=='play'||!mpMode().vs)return;const K=M
 function vsEnd(){if(!MP.host||MP.phase!=='play')return;MP.phase='end';const rows=vsRows();let title;
   if(mpMode().teams){const a=vsTeamKills(1),b=vsTeamKills(2);title=a===b?'Draw':'Team '+(a>b?1:2)+' wins';}
   else title=rows.length>1&&rows[0][1]===rows[1][1]?'Draw':rows[0][0]+' wins';
-  const Rr={title,rows,teams:!!mpMode().teams};for(const pl of MP.players.values())netTx(pl.conn,['end',Rr]);mpBroadcastLobby();mpShowEnd(Rr);}
+  const Rr={title,rows,teams:!!mpMode().teams};for(const pl of MP.players.values())netTx(pl.conn,['end',Rr,MP.round]);mpBroadcastLobby();mpShowEnd(Rr);}
 
 // ---------- hooks the session layer calls; the co-op modes add to these in their own file
 function mpStartExtra(){return mpMode().vs?{t:MP.cfg.mins*60}:coStartExtra();}

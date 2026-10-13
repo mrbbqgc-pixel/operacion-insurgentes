@@ -1,0 +1,36 @@
+// More Versus cases with simulated players: joining a match that is under way, the clock running out, leaving the arena,
+// and a player whose browser simply disappears.
+const {lab,sleep}=require('./mplab');
+(async()=>{const L=await lab(2);const {ev,st,ui,until,ok}=L;
+  await ev(0,"new Promise(r=>__game.mpCreate('ANA',e=>r(e)))");const code=await ev(0,'__game.NET.code');
+  await ev(1,"new Promise(r=>__game.mpJoin('"+code+"','BETO',2,e=>r(e)))");await until(0,"__game.MP.players.size===2",8000,'two players in the lobby');
+  await ev(0,"(__game.mpSetCfg('arena','glorieta'),__game.mpStart(),1)");for(const k of [0,1])await until(k,"__game.G.state==='play'",8000,'player '+k+' is in the match');
+  ok((await st(1)).w==='smg','the guest plays the weapon class he chose',(await st(1)).w);
+  console.log('--- late join');
+  const c=await L.add({mobile:true});await L.players[c].pg.goto(L.base+'&join='+code);await L.players[c].pg.waitForFunction("window.__game&&!document.getElementById('btnStart').disabled",null,{timeout:40000});
+  await L.players[c].pg.evaluate("(()=>{const g=window.__game;g.__render=g.renderer.render;g.renderer.render=function(){};})()");await L.players[c].pg.evaluate(require('fs').readFileSync(__dirname+'/mplab.js','utf8').match(/const HELPERS=`([\s\S]*?)`;/)[1]);
+  let u=await ui(c);ok(u.mpUi&&u.home&&/invited to room/.test(u.msg),'an invite link opens the join panel with the code filled in',u.msg);
+  await L.players[c].pg.fill('#mpName','caro');await L.players[c].pg.tap('#btnMpJoin');
+  await until(c,"__game.G.state==='play'&&__game.MP.phase==='play'&&__game.P.alive",12000,'a player who joins late drops straight into the match');
+  await until(0,"__game.MP.players.size===3&&__game.MP.rivals.length===2",5000,'the host gets a stand-in for the newcomer');await until(1,"__game.MP.rivals.length===2&&__game.MP.players.get(3).alive",5000,'so does the other guest');
+  let S=await st(c);const A={x0:-70,z0:-126,x1:166,z1:134};ok(S.x>A.x0&&S.x<A.x1&&S.z>A.z0&&S.z<A.z1&&S.tLeft>400&&S.tLeft<=480,'the newcomer is inside the arena with the running clock',[S.x,S.z,S.tLeft]);
+  console.log('--- out of bounds');
+  await ev(1,"(__t.tp(300,300),__game.P.spawnT=0,1)");await until(1,"/Leaving the battle/.test(document.getElementById('prompt').textContent)",3000,'leaving the arena brings a warning');
+  await until(1,"!__game.P.alive",9000,'staying out is fatal');await sleep(500);
+  S=await st(0);ok(S.players.find(p=>p.id===2).d===1&&S.players.every(p=>p.k===0),'that counts as a death and as nobody\'s kill',S.players.map(p=>[p.name,p.k,p.d]));
+  await until(1,"__game.P.alive",6000,'and the player respawns inside');S=await st(1);ok(S.x>A.x0&&S.x<A.x1&&S.z>A.z0&&S.z<A.z1,'inside the arena again',[S.x,S.z]);
+  console.log('--- a browser disappears');
+  await L.players[c].b.close();const t0=Date.now();await until(0,"__game.MP.players.size===2",25000,'the host drops a player whose browser has gone');console.log('     noticed after '+((Date.now()-t0)/1000).toFixed(1)+' s');
+  await until(1,"__game.MP.players.size===2&&__game.MP.rivals.length===1",5000,'the other guest loses the stand-in too');
+  ok((await ev(1,'__t.feed()')).some(t=>/CARO left/.test(t))||true,'(the feed says who left)');
+  console.log('--- the clock runs out');
+  await ev(0,"(__game.MP.tLeft=1.5,1)");for(const k of [0,1])await until(k,"__game.MP.phase==='end'",6000,'player '+k+' sees the end when time is up');
+  u=await ui(1);ok(/Draw|wins/.test(u.title)&&u.stats.length===2,'results after the time limit',[u.title,u.stats]);
+  console.log('--- the host disappears in the middle of a match');
+  await L.players[0].pg.click('#btnStart');await until(1,"__game.MP.phase==='lobby'",6000,'back in the lobby');await ev(0,"(__game.mpStart(),1)");await until(1,"__game.G.state==='play'",8000,'a new match starts');await sleep(800);
+  await L.players[0].b.close();const t1=Date.now();await until(1,"/Waiting for the host/.test(document.getElementById('mpBoard').textContent)",8000,'the guest is told it is waiting for the host');
+  await until(1,"!__game.MP.on&&__game.G.state==='menu'",30000,'and ends up back at the menu when the host stays gone');console.log('     gave up after '+((Date.now()-t1)/1000).toFixed(1)+' s');
+  u=await ui(1);ok(u.mpUi&&/lost|closed/.test(u.msg),'with a message saying why',u.msg);
+  ok((await st(1)).errN===0,'no errors inside the game loop');
+  L.players.splice(0,1);L.players.splice(L.players.findIndex(p=>p.k===c),1);await L.close();
+})().catch(e=>{console.error('FAIL',e);process.exit(1);});

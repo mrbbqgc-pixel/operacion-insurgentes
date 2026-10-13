@@ -36,7 +36,7 @@ MPE.fh=(from,a)=>{if(!MP.host)return;const nid=a[0]|0;let s=null;for(let k=0;k<f
 function coWipe(){if(G.mode==='survival'){coFinish(false);return;}radio('COMMAND','Everyone is down. Regroup at the last checkpoint.');restartCheckpoint();camera.rotation.z=0;}
 function coFinish(won){if(!MP.host||MP.phase!=='play')return;MP.phase='end';const rows=Array.from(MP.players.values(),p=>[p.name,p.k,p.d,p.team,p.id,p.sc]);rows.sort((a,b)=>b[5]-a[5]);
   const Rr={title:won?'Mission complete':G.mode==='survival'?'Overrun at wave '+(MS.surv?MS.surv.wave:0):'Mission failed',rows,coop:1};
-  for(const pl of MP.players.values())netTx(pl.conn,['end',Rr]);mpBroadcastLobby();hideHeli();mpShowEnd(Rr);}
+  for(const pl of MP.players.values())netTx(pl.conn,['end',Rr,MP.round]);mpBroadcastLobby();hideHeli();mpShowEnd(Rr);}
 function coAfterDeath(){}
 function coTick(dt,raw){
   if(MP.host){if(humans().length===0){MP.allDeadT+=raw;if(MP.allDeadT>2.4){MP.allDeadT=0;coWipe();}}else MP.allDeadT=0;return;}

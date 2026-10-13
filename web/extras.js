@@ -15,7 +15,7 @@
     var turn=function(){try{var o=screen.orientation;if(o&&o.lock){var q=o.lock('landscape');if(q&&q.catch)q.catch(function(){});}}catch(e){}};
     try{var p=rf.call(el,{navigationUI:'hide'});if(p&&p.then)p.then(turn,function(){});else turn();}catch(e){}
   }
-  ['btnStart','btnSurvival'].forEach(function(id){var b=d.getElementById(id);if(b)b.addEventListener('click',full);});
+  ['btnStart','btnSurvival','btnMpCreate','btnMpJoin','btnMpStart'].forEach(function(id){var b=d.getElementById(id);if(b)b.addEventListener('click',full);});
   // iPhone and iPad have no full-screen button for web pages: the Home Screen icon is how to get one
   if(ios&&!nav.standalone){
     var opts=d.getElementById('opts');

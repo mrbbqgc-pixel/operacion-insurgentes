@@ -26,7 +26,7 @@ function mpUi(){if(mpEl.mpUi.hidden)return;const inRoom=MP.on&&(MP.phase==='lobb
     b.textContent=p.name+(p.id===MP.me?' (you)':'');s.textContent=(p.id===1?'Host':'')+(M.teams?(p.id===1?' · ':'')+'Team '+p.team:'');li.append(b,s);li.className=(M.teams?'t'+p.team:'')+(p.id===MP.me?' me':'');mpEl.mpList.appendChild(li);}
   const n=MP.players.size;mpEl.btnMpStart.disabled=M.vs&&n<2;
   if(!mpEl.mpMsg.textContent||mpEl.mpMsg._auto){mpEl.mpMsg._auto=true;mpEl.mpMsg.textContent=h?(M.vs&&n<2?'Send the invite. Versus needs at least two players.':n<2?'You can start alone, or send the invite and wait for the others.':n+' players are in. Start when everyone is here.')
-    :MP.phase==='play'?'The game is under way.':'Waiting for the host to start.';}}
+    :MP.phase==='play'?'The game is under way.':MP.away?'The host is not answering. They may have put the game in the background.':'Waiting for the host to start.';}}
 function mpNote(t){mpEl.mpMsg._auto=false;mpSay(t);}
 function mpName(){const n=cleanName(mpEl.mpName.value);mpEl.mpName.value=n;SAVE.name=n;SAVE.cls=mpEl.mpCls.value|0;try{localStorage.setItem('opInsurgentes2',JSON.stringify(SAVE));}catch(e){}return n;}
 function mpBusy(on){mpEl.btnMpCreate.disabled=mpEl.btnMpJoin.disabled=on;}

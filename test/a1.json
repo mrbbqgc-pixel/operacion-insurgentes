@@ -1,0 +1,7 @@
+[
+ {"eval":"({peer:typeof window.Peer,btnMp:document.getElementById('btnMp').hidden,mpUi:document.getElementById('mpUi').hidden,start:document.getElementById('btnStart').textContent,netOk:window.__game.NET.ok})","log":"artifact menu"},
+ {"click":"#btnStart"},{"wait":500},
+ {"eval":"(()=>{const g=window.__game;g.sim(150,1/30);return {state:g.G.state,stage:g.MS.i,foes:g.foes.filter(f=>f.alive).length,allies:g.allies.length,board:document.getElementById('mpBoard').hidden,errN:g.G.errN||0}})()","log":"artifact play"},
+ {"key":"p"},{"wait":300},
+ {"eval":"({state:window.__game.G.state,title:document.getElementById('menuTitle').textContent,quit:document.getElementById('btnQuit').textContent,surv:document.getElementById('btnSurvival').textContent,mp:document.getElementById('btnMp').hidden})","log":"artifact pause"}
+]
