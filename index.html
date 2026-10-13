@@ -1539,14 +1539,14 @@ function buildSoldier(kind,wid){const g=new T.Group();g.rotation.order='YXZ';con
   if(kind==='heavy')g.scale.setScalar(1.14);
   return{g,mesh,body:B[0],up:B[1],aL:B[2],fL:B[3],aR:B[4],fR:B[5],wp:B[6],lL:B[7],kL:B[8],lR:B[9],kR:B[10]};}
 const allyMark=tex(32,32,(g,w,h)=>{g.fillStyle='#8ec1e6';g.strokeStyle='#15110c';g.lineWidth=3;g.beginPath();g.moveTo(16,27);g.lineTo(4,8);g.lineTo(28,8);g.closePath();g.fill();g.stroke();});
-const foes=[],allies=[],corpses=[];
+const foes=[],allies=[],corpses=[];let nidSeq=0;
 function addSoldier(team,kind,x,z,o){o=o||{};const m=buildSoldier(kind,o.wid),K=KIND[kind];
   const s={team,kind,K,x,z,y0:o.y0||0,yaw:o.yaw===undefined?R()*TAU:o.yaw,hp:K.hp,maxHp:K.hp,alive:true,sc:kind==='heavy'?1.14:1,
     crouch:0,wantCrouch:false,ph:R()*6,moveAmt:0,mx:0,mz:0,run:false,aimP:0,lowered:!o.aware,
     aware:!!o.aware,spot:0,target:null,seeT:99,lkx:x,lkz:z,cover:null,coverT:0,phase:'hide',phaseT:R2(.3,1.2),pushT:R2(6,12),
     burst:0,burstT:0,shootT:R2(.4,1.2),reactT:0,flinch:0,stuckT:0,lastX:x,lastZ:z,strafe:R()<.5?-1:1,strafeT:R2(1,3),percT:R()*.25,
     post:o.post||{x,z},post2:o.post2||null,patrolT:R2(1,5),goingBack:false,isStatic:!!o.isStatic,aimT:0,nadeT:R2(8,16),revealT:0,
-    name:o.name||'',downT:0,deadT:0,fall:1,goal:null,goalT:0,searchT:0,stepD:0,tag:o.tag||'',
+    name:o.name||'',downT:0,deadT:0,fall:1,goal:null,goalT:0,searchT:0,stepD:0,tag:o.tag||'',nid:++nidSeq,
     g:m.g,mesh:m.mesh,body:m.body,up:m.up,aL:m.aL,aR:m.aR,fL:m.fL,fR:m.fR,wp:m.wp,lL:m.lL,lR:m.lR,kL:m.kL,kR:m.kR,mark:null};
   s.g.position.set(x,s.y0,z);s.g.rotation.y=s.yaw;
   if(team===0){const sp=new T.Sprite(new T.SpriteMaterial({map:allyMark,depthTest:false,transparent:true,sizeAttenuation:false}));sp.scale.set(.028,.028,1);sp.position.y=2.25;sp.renderOrder=50;s.g.add(sp);s.mark=sp;}
@@ -1824,13 +1824,14 @@ function seeTarget(s,t,range){const dx=t.x-s.x,dz=t.z-s.z,d=Math.hypot(dx,dz);if
   if(los(s.x,ey,s.z,t.x,y1,t.z))return 2;if(los(s.x,ey,s.z,t.x,y2,t.z))return 1;return 0;}
 function percFoe(s,tick){let best=null,bd=1e9,bv=0;
   if(P.alive){const v=seeTarget(s,P,s.aware?s.K.range+40:75);if(v){best=P;bd=Math.hypot(P.x-s.x,P.z-s.z);bv=v;}}
+  for(let k=0;k<MP.mates.length;k++){const a=MP.mates[k];if(!a.alive)continue;const d=Math.hypot(a.x-s.x,a.z-s.z);if(d<bd){const v=seeTarget(s,a,s.aware?s.K.range+40:75);if(v){best=a;bd=d;bv=v;}}} // the other players
   for(let k=0;k<allies.length;k++){const a=allies[k];if(!a.alive)continue;const d=Math.hypot(a.x-s.x,a.z-s.z)*1.25;if(d<bd){const v=seeTarget(s,a,s.aware?s.K.range+20:60);if(v){best=a;bd=d;bv=v;}}}
-  if(best){
-    if(!s.aware){s.spot+=tick*(bd<14?5:bd<40?1.7:.85)*((best===P&&P.crouch>.5)?.55:1)*((best===P&&P.speed>4)?1.3:1);
+  if(best){const hum=best===P||!!best.remote,hc=best===P?P.crouch:best.crouch,hs=best===P?P.speed:(best.speed||0);
+    if(!s.aware){s.spot+=tick*(bd<14?5:bd<40?1.7:.85)*((hum&&hc>.5)?.55:1)*((hum&&hs>4)?1.3:1);
       if(s.spot<1){s.target=null;return;}s.aware=true;s.lowered=false;s.reactT=R2(.35,.8);alertNear(s,45);}
     if(s.target!==best)s.reactT=Math.max(s.reactT,R2(.25,.55));
     s.target=best;s.vis=bv;s.seeT=0;s.lkx=best.x;s.lkz=best.z;if(s.revealT<.6)s.revealT=.6;
-    if(best===P){G.lkp.x=P.x;G.lkp.z=P.z;G.lkp.age=0;}
+    if(hum){G.lkp.x=best.x;G.lkp.z=best.z;G.lkp.age=0;}
     if(s.cover&&s.phase==='hide'&&Math.hypot(s.cover.x-s.x,s.cover.z-s.z)<1.3){const ty=best===P?P.y+lerp(1.6,1.02,P.crouch):eyeY(best);if(los(best.x,ty,best.z,s.x,s.y0+.85,s.z))s.flanked=true;}}
   else{s.seeT+=tick;s.vis=0;if(!s.aware)s.spot=Math.max(0,s.spot-tick*.4);}}
 function percAlly(s,tick){let best=null,bd=1e9;for(let k=0;k<foes.length;k++){const f=foes[k];if(!f.alive)continue;const d=Math.hypot(f.x-s.x,f.z-s.z);if(d<bd&&d<85&&los(s.x,eyeY(s),s.z,f.x,chestY(f),f.z)){best=f;bd=d;}}
@@ -1849,11 +1850,14 @@ function damageSoldier(s,dmg,zone,fx,fz,byPlayer,explosive,D){if(!s.alive)return
   if(s.hp<=0){if(s.team===0)downAlly(s);else killFoe(s,fx,fz,byPlayer,zone===0&&!explosive);}}
 function killFoe(s,fx,fz,byPlayer,head){s.alive=false;s.deadT=0;dropCover(s);const hx=s.x-fx,hz=s.z-fz;s.fall=(hx*-Math.sin(s.yaw)+hz*-Math.cos(s.yaw))<0?1:-1;s.wp.scale.setScalar(.001);
   if(s.laser){scene.remove(s.laser);s.laser=null;}
-  if(s.y0<.5){const K=s.K;if(R()<.62)addPick('w',s.x+R2(-.5,.5),s.z+R2(-.5,.5),{id:K.drop,mag:Math.round(R2(.3,1)*WDEF[K.drop].mag),res:Math.round(R2(0,1)*WDEF[K.drop].mag)});
-    const r=R();if(r<.1)addPick('med',s.x+R2(-.8,.8),s.z+R2(-.8,.8));else if(r<.18)addPick('nade',s.x+R2(-.8,.8),s.z+R2(-.8,.8));else if(r<.42)addPick('ammo',s.x+R2(-.8,.8),s.z+R2(-.8,.8));}
-  if(byPlayer){G.stats.kills++;if(head)G.stats.heads++;const pts=(head?150:100)+(s.kind==='heavy'?100:s.kind==='mark'?50:0);G.score+=pts;killFeed('+'+pts,head?'Headshot':s.K.label);sndUi('kill');}
-  else G.stats.allyKills=(G.stats.allyKills||0)+1;
+  foeLoot(s);const pts=(head?150:100)+(s.kind==='heavy'?100:s.kind==='mark'?50:0);
+  if(byPlayer){G.stats.kills++;if(head)G.stats.heads++;G.score+=pts;killFeed('+'+pts,head?'Headshot':s.K.label);sndUi('kill');}
+  else if(!MP.hitBy)G.stats.allyKills=(G.stats.allyKills||0)+1;
+  if(MP.on&&MP.host)coFoeKilled(s,byPlayer?MP.me:MP.hitBy,head,pts);
   alertNear(s,28);if(G.onKill)G.onKill(s);}
+// what a fallen hostile leaves behind (in multiplayer every player finds his own)
+function foeLoot(s){if(s.y0>=.5)return;const K=s.K;if(R()<.62)addPick('w',s.x+R2(-.5,.5),s.z+R2(-.5,.5),{id:K.drop,mag:Math.round(R2(.3,1)*WDEF[K.drop].mag),res:Math.round(R2(0,1)*WDEF[K.drop].mag)});
+  const r=R();if(r<.1)addPick('med',s.x+R2(-.8,.8),s.z+R2(-.8,.8));else if(r<.18)addPick('nade',s.x+R2(-.8,.8),s.z+R2(-.8,.8));else if(r<.42)addPick('ammo',s.x+R2(-.8,.8),s.z+R2(-.8,.8));}
 function downAlly(s){s.alive=false;s.down=true;s.downT=16;s.hp=0;s.target=null;dropCover(s);radio('COMMAND',s.name+' is hit. Cover him until he is back up.');}
 function face(s,tx,tz,dt,rate){const want=Math.atan2(-(tx-s.x),-(tz-s.z)),d=angDiff(want,s.yaw);s.yaw+=clamp(d,-rate*dt,rate*dt);s.g.rotation.y=s.yaw;return Math.abs(d);}
 function moveToward(s,tx,tz,speed,F){const dx=tx-s.x,dz=tz-s.z,d=Math.hypot(dx,dz);if(d<.45){s.mx=0;s.mz=0;s.spd=0;return d;}
@@ -1873,11 +1877,13 @@ function shootAt(s,t,d,moving){const fx=-Math.sin(s.yaw),fz=-Math.cos(s.yaw),my=
   s.revealT=3;sndShot(s.K.snd,s.x,s.z,false);puff(mx,my,mz,0xffc45a,.26,.06,.05,1,0,0,0,true);
   let p=s.K.acc*clamp(1-Math.pow(d/s.K.range,1.3),.08,1)*(moving?.55:1)*(s.supp>0?.6:1),ty;
   if(isP){ty=P.y+lerp(1.25,.8,P.crouch);p*=(P.crouch>.5?.68:1)*(P.speed>6?.6:P.speed>2?.82:1)*(P.ground?1:.7)*(s.vis===1?.35:1)*G.diff;}
+  else if(t.remote){ty=chestY(t);p*=(t.crouch>.5?.68:1)*(t.speed>6?.6:t.speed>2?.82:1)*(s.vis===1?.35:1)*G.diff;} // another player: judged like the player himself
   else{ty=chestY(t);p*=(t.crouch>.5?.7:1)*((t.cover&&t.phase==='hide')?.15:1)*(s.team===0?.55:.8);}
-  if(R()<p){tracer(mx,my,mz,t.x,ty,t.z,0xffd27a);const dmg=s.K.dmg*R2(.8,1.2);if(isP)hurt(dmg,s.x,s.z);else{const r=R();bloodPuff(t.x,ty,t.z);damageSoldier(t,dmg,r<.1?0:r<.78?1:2,s.x,s.z,false,false,null);}}
+  if(R()<p){tracer(mx,my,mz,t.x,ty,t.z,0xffd27a);const dmg=s.K.dmg*R2(.8,1.2);if(isP)hurt(dmg,s.x,s.z);else{const r=R();bloodPuff(t.x,ty,t.z);damageSoldier(t,dmg,r<.1?0:r<.78?1:2,s.x,s.z,false,false,null);}
+    if(MP.host)coFoeShot(s,t.x,ty,t.z,t,1);}
   else{const off=R2(.5,1.8)*(R()<.5?-1:1),bx0=t.x-mx,bz0=t.z-mz,l=Math.hypot(bx0,bz0)||1;let dx=bx0-bz0/l*off,dy=ty+R2(-.5,.9)-my,dz=bz0+bx0/l*off;
     const n=Math.hypot(dx,dy,dz)||1;dx/=n;dy/=n;dz/=n;const tt=rayWorld(mx,my,mz,dx,dy,dz,l+45),hx=mx+dx*tt,hy=my+dy*tt,hz=mz+dz*tt;
-    if(R()<.6)tracer(mx,my,mz,hx,hy,hz,0xffd27a);if(tt<l+45&&Math.hypot(hx-P.x,hz-P.z)<45)dust(hx,hy,hz,1);
+    if(R()<.6)tracer(mx,my,mz,hx,hy,hz,0xffd27a);if(tt<l+45&&Math.hypot(hx-P.x,hz-P.z)<45)dust(hx,hy,hz,1);if(MP.host)coFoeShot(s,hx,hy,hz,t,0);
     if(isP&&R()<.5){sndWhiz();G.supp=Math.min(1,G.supp+.22);}}}
 function tryShoot(s,t,dt,d,moving){if(s.reactT>0){s.reactT-=dt;return;}
   if(s.burst>0){s.burstT-=dt;if(s.burstT<=0){s.burst--;s.burstT=s.K.rof;shootAt(s,t,d,moving);}}
@@ -1921,7 +1927,7 @@ function combat(s,t,dt,vis){const dx=t.x-s.x,dz=t.z-s.z,d=Math.hypot(dx,dz)||.01
     if(vis&&canFire&&d<K.range)tryShoot(s,t,dt,d,s.spd>0);}
   // a rifleman lobs a grenade at a player who stays put behind cover
   s.nadeT-=dt;if(t===P&&s.nadeT<=0&&G.nadeCD<=0&&P.stillT>5&&d>12&&d<36&&s.y0<.5&&s.flinch<=0){s.nadeT=R2(14,22);G.nadeCD=12;const Tm=1.35,ex=R2(-1.6,1.6),ez=R2(-1.6,1.6);
-    spawnNade(s.x,1.5,s.z,(P.x+ex-s.x)/Tm,(P.y-1.5+.5*14*Tm*Tm)/Tm,(P.z+ez-s.z)/Tm,2.9,false);if(allies.some(a=>a.alive))radio(allies.find(a=>a.alive).name,'Grenade! Move!');}}
+    const gn=spawnNade(s.x,1.5,s.z,(P.x+ex-s.x)/Tm,(P.y-1.5+.5*14*Tm*Tm)/Tm,(P.z+ez-s.z)/Tm,2.9,false);if(MP.on)mpNade(gn);if(allies.some(a=>a.alive))radio(allies.find(a=>a.alive).name,'Grenade! Move!');}}
 function hunt(s,dt){s.wantCrouch=false;s.lowered=false;s.aimP=0;const shared=G.lkp.age<22,gx=shared?G.lkp.x:s.lkx,gz=shared?G.lkp.z:s.lkz,d=Math.hypot(gx-s.x,gz-s.z);
   if(s.goal){const dd=moveToward(s,s.goal.x,s.goal.z,s.K.spd*.7,null);s.goalT-=dt;if(dd<1.5||s.goalT<=0)s.goal=null;else face(s,s.x+s.mx*3,s.z+s.mz*3,dt,5);}
   else if(d>9){moveToward(s,gx,gz,s.K.spd*(s.kind==='rush'?1:.85),(shared&&FE.n>0)?FE:null);face(s,s.x+s.mx*3,s.z+s.mz*3,dt,5);}
@@ -1944,10 +1950,11 @@ function updMark(s,dt){if(s.flinch>0)s.flinch-=dt;if(s.revealT>0)s.revealT-=dt;s
     if(s.aimT>.25){if(!s.laser){const g=new T.BufferGeometry();g.setAttribute('position',new T.BufferAttribute(new Float32Array(6),3));s.laser=new T.Line(g,laserMat);s.laser.frustumCulled=false;scene.add(s.laser);}
       const a=s.laser.geometry.attributes.position;a.setXYZ(0,mx,my,mz);a.setXYZ(1,t.x,ty,t.z);a.needsUpdate=true;s.laser.visible=true;s.revealT=1;}
     if(s.aimT>(s.aimNeed||2)){s.aimT=0;s.aimNeed=R2(1.9,2.6);s.revealT=3;sndShot('dmr',s.x,s.z,false);puff(mx,my,mz,0xffc45a,.4,.08,.06,1,0,0,0,true);
-      let p;if(t===P)p=.82*(P.speed>6?.3:P.speed>2.5?.55:1)*(P.crouch>.5?.85:1)*(s.vis===1?.5:1)*clamp(1.15-d/200,.4,1)*G.diff;else p=.5;
-      if(R()<p){tracer(mx,my,mz,t.x,ty,t.z,0xfff6d0);if(t===P)hurt(s.K.dmg*R2(.9,1.1),s.x,s.z);else damageSoldier(t,s.K.dmg,1,s.x,s.z,false,false,null);}
+      let p;if(t===P)p=.82*(P.speed>6?.3:P.speed>2.5?.55:1)*(P.crouch>.5?.85:1)*(s.vis===1?.5:1)*clamp(1.15-d/200,.4,1)*G.diff;
+      else if(t.remote)p=.82*(t.speed>6?.3:t.speed>2.5?.55:1)*(t.crouch>.5?.85:1)*(s.vis===1?.5:1)*clamp(1.15-d/200,.4,1)*G.diff;else p=.5;
+      if(R()<p){tracer(mx,my,mz,t.x,ty,t.z,0xfff6d0);if(t===P)hurt(s.K.dmg*R2(.9,1.1),s.x,s.z);else damageSoldier(t,s.K.dmg,1,s.x,s.z,false,false,null);if(MP.host)coFoeShot(s,t.x,ty,t.z,t,1);}
       else{let dx=t.x+R2(-1,1)-mx,dy=ty+R2(-.4,.8)-my,dz=t.z+R2(-1,1)-mz;const l=Math.hypot(dx,dy,dz);dx/=l;dy/=l;dz/=l;const tt=rayWorld(mx,my,mz,dx,dy,dz,l+40);
-        tracer(mx,my,mz,mx+dx*tt,my+dy*tt,mz+dz*tt,0xfff6d0);dust(mx+dx*tt,my+dy*tt,mz+dz*tt,2);if(t===P)sndWhiz();}}}
+        tracer(mx,my,mz,mx+dx*tt,my+dy*tt,mz+dz*tt,0xfff6d0);dust(mx+dx*tt,my+dy*tt,mz+dz*tt,2);if(t===P)sndWhiz();if(MP.host)coFoeShot(s,mx+dx*tt,my+dy*tt,mz+dz*tt,t,0);}}}
   else{s.aimT=Math.max(0,s.aimT-dt*2);if(s.laser)s.laser.visible=false;s.wantCrouch=s.aware&&s.seeT>1.5;s.aimP=0;if(!s.aware||s.seeT>4){s.yaw+=Math.sin(G.time*.4+s.ph)*dt*.5;s.g.rotation.y=s.yaw;}
     else face(s,s.lkx,s.lkz,dt,2);}
   s.crouch+=clamp((s.wantCrouch?1:0)-s.crouch,-dt*4.5,dt*4.5);s.moveAmt=0;animSoldier(s,dt);}
@@ -1970,7 +1977,7 @@ function updCorpse(s,dt){s.deadT+=dt;const k=Math.min(1,s.deadT/.42),e=k*k*(3-2*
 function clearSoldiers(){for(const s of foes){removeSoldier(s);if(s.laser)scene.remove(s.laser);}foes.length=0;for(const s of corpses)removeSoldier(s);corpses.length=0;coverTaken.clear();}
 function updAI(dt){G.budget=2;G.lkp.age+=dt;if(G.nadeCD>0)G.nadeCD-=dt;if(G.calloutT>0)G.calloutT-=dt;if(G.supp>0)G.supp=Math.max(0,G.supp-dt*.5);
   let hunters=0;for(let k=0;k<foes.length;k++){const s=foes[k];if(s.alive&&s.aware&&!s.isStatic)hunters++;}
-  if(hunters&&G.lkp.age>13&&P.alive){G.lkp.x=P.x+R2(-14,14);G.lkp.z=P.z+R2(-14,14);G.lkp.age=5;}
+  if(hunters&&G.lkp.age>13){const H=humans();if(H.length){const h=RP(H);G.lkp.x=h.x+R2(-14,14);G.lkp.z=h.z+R2(-14,14);G.lkp.age=5;}}
   feT-=dt;if(feT<=0&&hunters){feT=.5;flow(FE,G.lkp.x,G.lkp.z,110);}
   faT-=dt;if(faT<=0&&allies.length){faT=.5;flow(FA,P.x,P.z,60);}
   for(let k=foes.length-1;k>=0;k--){const s=foes[k];
@@ -2011,7 +2018,7 @@ function aliveFoes(tag){let n=0;for(let k=0;k<foes.length;k++)if(foes[k].alive&&
 function foesNear(x,z,r){let n=0;for(let k=0;k<foes.length;k++){const s=foes[k];if(s.alive&&s.y0<.5&&Math.hypot(s.x-x,s.z-z)<r)n++;}return n;}
 function spotNear(x,z,r,tries){for(let k=0;k<(tries||30);k++){const a=R()*TAU,d=Math.sqrt(R())*r,px=x+Math.cos(a)*d,pz=z+Math.sin(a)*d;if(freeSpot(px,pz))return[px,pz];}return null;}
 function garrison(grp,tag){const covers=lowCover.filter(c=>Math.hypot(c[0]-grp.x,c[1]-grp.z)<grp.r);
-  for(const kind in grp.units)for(let k=0;k<grp.units[kind];k++){let p=null;if(covers.length&&R()<.7){const c=RP(covers);p=spotNear(c[0],c[1],2.6,12);}
+  for(const kind in grp.units)for(let k=0,n=Math.max(1,Math.round(grp.units[kind]*coScale()));k<n;k++){let p=null;if(covers.length&&R()<.7){const c=RP(covers);p=spotNear(c[0],c[1],2.6,12);}
     if(!p)p=spotNear(grp.x,grp.z,grp.r,40);if(!p)continue;const o={tag,post:{x:p[0],z:p[1]},yaw:Math.atan2(-(P.x-p[0]),-(P.z-p[1]))+R2(-1.2,1.2)};
     if(kind==='rifle'&&R()<.35){const q=spotNear(p[0],p[1],14,10);if(q)o.post2={x:q[0],z:q[1]};}addSoldier(1,kind,p[0],p[1],o);}}
 function spawnMark(pos,tag){return addSoldier(1,'mark',pos.x,pos.z,{y0:pos.y,isStatic:true,tag,yaw:Math.atan2(-(P.x-pos.x),-(P.z-pos.z))});}
@@ -2019,10 +2026,10 @@ function roofSpot(x,z,minD,maxD){let best=null,bs=-1;for(let k=0;k<buildings.len
     const sc=R();if(sc>bs){bs=sc;best=b;}}
   return best?{x:clamp(x,best.x-best.w/2+.9,best.x+best.w/2-.9),y:best.h,z:clamp(z,best.z-best.d/2+.9,best.z+best.d/2-.9)}:null;}
 // reinforcements arrive from a street corner out of the player's sight and head for (tx,tz)
-function spawnWave(n,kinds,tx,tz,dir,tag){n=Math.min(n,Q.maxFoes+2-aliveFoes());if(n<=0)return 0;let best=null,bs=-1e9;
-  for(let k=0;k<50;k++){const s=RP(SPN),dP=Math.hypot(s[0]-P.x,s[1]-P.z);if(dP<55||dP>150||!freeSpot(s[0],s[1]))continue;
+function spawnWave(n,kinds,tx,tz,dir,tag){n=Math.min(Math.round(n*coScale()),foeCap()+2-aliveFoes());if(n<=0)return 0;const H=humans();let best=null,bs=-1e9;
+  for(let k=0;k<50;k++){const s=RP(SPN);let dP=H.length?1e9:Math.hypot(s[0]-tx,s[1]-tz);for(const h of H)dP=Math.min(dP,Math.hypot(s[0]-h.x,s[1]-h.z));if(dP<55||dP>150||!freeSpot(s[0],s[1]))continue;
     let sc=-Math.abs(dP-95)*.02+R();if(dir){const dx=s[0]-tx,dz=s[1]-tz,l=Math.hypot(dx,dz)||1;sc+=(dx*dir[0]+dz*dir[1])/l*1.5;}
-    if(los(s[0],1.6,s[1],P.x,P.y+1.6,P.z))sc-=3;if(sc>bs){bs=sc;best=s;}}
+    for(const h of H)if(los(s[0],1.6,s[1],h.x,(h===P?P.y:h.y0)+1.6,h.z)){sc-=3;break;}if(sc>bs){bs=sc;best=s;}}
   if(!best)return 0;
   for(let k=0;k<n;k++){const p=spotNear(best[0],best[1],6,12)||best;waveQ.push({t:k*.35,kind:kinds[Math.floor(R()*kinds.length)],x:p[0],z:p[1],tag});}
   if(G.lkp.age>10){G.lkp.x=tx;G.lkp.z=tz;G.lkp.age=6;}return n;}
@@ -2039,8 +2046,8 @@ function jammerGeo(){if(jamGeo)return jamGeo;const b=new GB(),ol=0x5b6140,ol2=0x
   return jamGeo=b.build();}
 function makeJammer(){removeJammer(false);const x=44,z=-478.5,g=new T.Mesh(jammerGeo(),vcMat);g.position.set(x,0,z);g.rotation.y=PI/2;g.castShadow=true;
   scene.add(g);const c=solid(x,z,5.9,2.3,2.8);binAdd(c);blockCollider(c);MS.jam={g,c,x,z};}
-function removeJammer(boom){const j=MS.jam;if(!j)return;scene.remove(j.g);j.c.off=true;MS.jam=null;
-  if(boom){explode(j.x,1.2,j.z,9.5,200,true);const w=new T.Mesh(jammerGeo(),char);w.position.set(j.x,-.12,j.z);w.rotation.y=PI/2;w.scale.set(1,.72,1);scene.add(w);fires.push({x:j.x,y:1.2,z:j.z,t:16,n:0});}}
+function removeJammer(boom,rep){const j=MS.jam;if(!j)return;scene.remove(j.g);j.c.off=true;MS.jam=null;
+  if(boom){if(MP.on&&MP.host&&!rep)mpEvent('jam',0,[]);explode(j.x,1.2,j.z,9.5,200,true,rep,0);const w=new T.Mesh(jammerGeo(),char);w.position.set(j.x,-.12,j.z);w.rotation.y=PI/2;w.scale.set(1,.72,1);scene.add(w);fires.push({x:j.x,y:1.2,z:j.z,t:16,n:0});}}
 // extraction helicopter
 const heli={g:null,rot:null,tail:null,on:false,landed:false,x:0,y:0,z:0};
 function makeHeli(){if(heli.g)return;const g=new T.Group(),b=new GB(),ol=0x4b5239,ol2=0x3c4230,gl=0x1c2830,dk=0x24231f;
@@ -2070,11 +2077,12 @@ function stageStart(i){MS.i=i;const st=ST[i];MS.st=st;MS.prog=0;MS.t=0;MS.stall=
   if(st.heli){makeHeli();heli.on=true;heli.landed=false;heli.g.visible=true;}
   OBJ.text=st.title;OBJ.sub='';OBJ.prog=0;OBJ.x=st.x;OBJ.z=st.z;OBJ.show=true;if(st.intro)radio(st.intro[0],st.intro[1]);}
 function stageDone(){const st=MS.st;MS.done=true;MS.nextT=st.type==='reach'?.1:3.2;G.score+=500;sndUi('obj');if(st.type!=='reach')banner('OBJECTIVE COMPLETE',st.title.toUpperCase());
-  if(st.outro)radio(st.outro[0],st.outro[1]);if(st.type!=='reach'&&st.key!=='exfil'){const p=spotNear(st.x,st.z,7,30);if(p)addPick('crate',p[0],p[1]);}
+  if(st.outro)radio(st.outro[0],st.outro[1]);if(st.type!=='reach'&&st.key!=='exfil'){const p=spotNear(st.x,st.z,7,30);if(p)coCrate(p[0],p[1]);}
   for(const a of allies){if(a.down){a.down=false;a.alive=true;a.up.rotation.z=0;}a.hp=a.maxHp;}}
 function stageUpdate(dt){const st=MS.st;if(!st)return;
   if(MS.done){MS.nextT-=dt;if(MS.nextT<=0){if(MS.i+1<ST.length)stageStart(MS.i+1);else missionWon();}return;}
-  MS.t+=dt;const dP=Math.hypot(P.x-st.x,P.z-st.z),inZone=dP<st.r;OBJ.x=st.x;OBJ.z=st.z;OBJ.y=1.8;
+  MS.t+=dt;const dMe=P.alive?Math.hypot(P.x-st.x,P.z-st.z):1e9;let dP=dMe;for(const m of MP.mates)if(m.alive)dP=Math.min(dP,Math.hypot(m.x-st.x,m.z-st.z)); // the nearest player counts
+  const inZone=dP<st.r;OBJ.x=st.x;OBJ.z=st.z;OBJ.y=1.8;
   if(MS.i===0&&!SAVE.tips&&MS.tip<3&&MS.t>5+MS.tip*12){radio('TIP',TIPS[MS.tip++]);if(MS.tip>=3){SAVE.tips=true;saveGame();}}
   if(st.reinf&&!MS.reinfDone&&aliveFoes(st.key)<=MS.init*(1-st.reinf.at)){MS.reinfDone=true;spawnWave(st.reinf.n,st.reinf.kinds,st.x,st.z,st.reinf.dir,st.key);}
   if(st.type==='capture'){const near=foesNear(st.x,st.z,st.r+8);
@@ -2087,11 +2095,13 @@ function stageUpdate(dt){const st=MS.st;if(!st)return;
     OBJ.sub=inZone?Math.max(0,Math.ceil(st.time-el))+' s to go':'Get back to the position';if(st.heli)updHeli(dt,MS.prog);if(MS.prog>=1){if(st.heli)heli.landed=true;stageDone();}}
   else if(st.type==='plant'){const j=MS.jam;
     if(MS.phase===''){OBJ.sub=foesNear(st.x,st.z,26)?'Fight through to the truck':'Plant the charge on the truck';
-      if(j&&dP<st.r&&P.alive){G.prompt='Hold <b>'+(isTouch?'USE':'F')+'</b> to plant the charge';if(IN.useHeld){MS.plantT+=dt;OBJ.sub='Planting the charge';MS.prog=MS.plantT/2.2*.3;
+      if(j&&dP<st.r){if(dMe<st.r)G.prompt='Hold <b>'+(isTouch?'USE':'F')+'</b> to plant the charge';let planting=dMe<st.r&&IN.useHeld;
+        if(!planting)for(const m of MP.mates){const pl=MP.players.get(m.pid);if(m.alive&&pl&&pl.use&&Math.hypot(m.x-st.x,m.z-st.z)<st.r){planting=true;break;}}
+        if(planting){MS.plantT+=dt;OBJ.sub='Planting the charge';MS.prog=MS.plantT/2.2*.3;
           if(MS.plantT>=2.2){MS.phase='defend';MS.defT=st.defend;sndUi('pin');radio('COMMAND','Charge is set. '+st.defend+' seconds. Keep them off it and stay clear of the truck.');}}
         else MS.plantT=Math.max(0,MS.plantT-dt);}}
     else{MS.defT-=dt;const el=st.defend-MS.defT;while(MS.waveK<st.waves.length&&el>=st.waves[MS.waveK].t){const w=st.waves[MS.waveK++];spawnWave(w.n,w.kinds,st.x,st.z,w.dir,st.key);}
-      MS.prog=.3+.7*el/st.defend;OBJ.sub='Detonation in '+Math.max(0,Math.ceil(MS.defT))+' s. '+(dP<11?'GET CLEAR OF THE TRUCK':'You are clear');if(dP<11&&MS.defT<8)G.prompt='Move away from the truck';if(MS.defT<=0){removeJammer(true);stageDone();}}}
+      MS.prog=.3+.7*el/st.defend;OBJ.sub='Detonation in '+Math.max(0,Math.ceil(MS.defT))+' s. '+(dP<11?'GET CLEAR OF THE TRUCK':'You are clear');if(dMe<11&&MS.defT<8)G.prompt='Move away from the truck';if(MS.defT<=0){removeJammer(true);stageDone();}}}
   else if(st.type==='eliminate'){const n=aliveFoes(st.key);MS.prog=1-n/MS.init;OBJ.sub='Hostiles remaining: '+n;if(n!==MS.lastN){MS.lastN=n;MS.stall=0;}else MS.stall+=dt;
     // point at the nearest one left once few remain or the hunt has stalled; a marker up in the air means a rooftop or bell tower
     if(n>0&&(n<=3||MS.stall>18)){let b=null,bd=1e9,high=0;for(const s of foes)if(s.alive&&s.tag===st.key){if(s.revealT<1)s.revealT=1;if(s.y0>2)high++;const d=Math.hypot(s.x-P.x,s.z-P.z);if(d<bd){bd=d;b=s;}}
@@ -2102,7 +2112,7 @@ function stageUpdate(dt){const st=MS.st;if(!st)return;
 function resetWorldState(){clearSoldiers();clearPicks();for(const n of nades)scene.remove(n.m);nades.length=0;waveQ.length=0;hideHeli();G.arcs.length=0;G.lkp.age=99;G.vig=0;G.supp=0;
   P.vx=P.vz=P.vy=0;P.hp=100;P.alive=true;P.stam=1;P.crouching=false;P.crouch=0;P.ads=0;P.wantAds=false;P.reloading=false;P.swapT=0;P.swapTo=-1;P.meleeT=0;P.recoil=0;P.pitch=0;P.punch=0;P.roll=0;P.hurtT=9;
   IN.fire=false;IN.useHeld=false;P.spawnT=0;}
-function placeSquad(){if(MP.on){for(const a of allies)removeSoldier(a);allies.length=0;return;} // the other players are the squad
+function placeSquad(){if(MP.on&&(mpMode().vs||MP.players.size>1)){for(const a of allies)removeSoldier(a);allies.length=0;return;} // the other players are the squad
   const names=['REYES','LUNA'];while(allies.length<2){addSoldier(0,'ally',P.x,P.z,{name:names[allies.length],aware:true});}
   allies.forEach((a,k)=>{const p=spotNear(P.x+Math.sin(P.yaw)*4,P.z+Math.cos(P.yaw)*4,5,30)||[P.x,P.z];a.x=p[0];a.z=p[1];a.hp=a.maxHp;a.alive=true;a.down=false;a.target=null;a.up.rotation.z=0;a.g.position.set(a.x,0,a.z);a.g.visible=true;});}
 function startMission(stage){G.mode='mission';resetWorldState();removeJammer(false);const st=ST[stage],sp=st.spawn;P.x=sp[0];P.z=sp[1];P.y=0;P.yaw=sp[2];
@@ -2111,17 +2121,18 @@ function startMission(stage){G.mode='mission';resetWorldState();removeJammer(fal
   banner('OPERACIÓN INSURGENTES','CIUDAD INSURGENTES, B.C.S. · FIRETEAM HALCÓN');}
 function restartCheckpoint(){resetWorldState();removeJammer(false);const st=MS.st,sp=st.spawn,L0=MS.loadout;P.x=sp[0];P.z=sp[1];P.y=0;P.yaw=sp[2];
   P.slots=L0.slots.map(w=>({id:w.id,mag:WDEF[w.id].mag,res:Math.max(w.res,Math.round(WDEF[w.id].max*.6))}));P.cur=L0.cur;P.nades=Math.max(3,L0.nades);showWeapon();
-  placeSquad();stageStart(MS.i);}
+  placeSquad();stageStart(MS.i);if(MP.on&&MP.host)mpEvent('ckpt',0,[MS.i]);}
 function startSurvival(){G.mode='survival';resetWorldState();removeJammer(false);MS.st=null;MS.i=-1;P.x=-4;P.z=16;P.y=0;P.yaw=0;giveLoadout();
   G.score=0;G.stats={kills:0,heads:0,shots:0,hits:0,deaths:0,time:0};placeSquad();MS.surv={wave:0,t:4,live:false,left:0};
   OBJ.text='Survive at the Glorieta';OBJ.sub='';OBJ.prog=0;OBJ.x=0;OBJ.z=0;OBJ.show=false;banner('SURVIVAL','HOLD THE GLORIETA AS LONG AS YOU CAN');}
 function survivalUpdate(dt){const S=MS.surv;if(!S)return;
-  if(!S.live){S.t-=dt;OBJ.sub='Next wave in '+Math.max(0,Math.ceil(S.t))+' s';if(S.t<=0){S.wave++;S.live=true;S.left=4+S.wave*2;S.st=0;banner('WAVE '+S.wave,'');
-      if(S.wave>=4&&S.wave%2===0){const r=roofSpot(P.x,P.z,25,60);if(r)spawnMark(r,'sv');}}return;}
+  const H=humans();let cx=0,cz=0;for(const h of H){cx+=h.x/H.length;cz+=h.z/H.length;} // where the players are, or the Glorieta if nobody is standing
+  if(!S.live){S.t-=dt;OBJ.sub='Next wave in '+Math.max(0,Math.ceil(S.t))+' s';if(S.t<=0){S.wave++;S.live=true;S.left=Math.round((4+S.wave*2)*coScale());S.st=0;banner('WAVE '+S.wave,'');
+      if(S.wave>=4&&S.wave%2===0){const r=roofSpot(cx,cz,25,60);if(r)spawnMark(r,'sv');}}return;}
   S.st-=dt;if(S.left>0&&S.st<=0){S.st=3;const kinds=S.wave<2?['rifle']:S.wave<4?['rifle','rifle','rush']:['rifle','rifle','rush','heavy'];
-    S.left-=spawnWave(Math.min(S.left,4),kinds,P.x,P.z,null,'sv');}
+    S.left-=spawnWave(Math.min(S.left,4),kinds,cx,cz,null,'sv');}
   const n=aliveFoes()+waveQ.length;OBJ.text='Survive at the Glorieta · Wave '+S.wave;OBJ.sub='Hostiles: '+(n+Math.max(0,S.left));
-  if(S.left<=0&&n===0){S.live=false;S.t=7;G.score+=250*S.wave;sndUi('obj');banner('WAVE '+S.wave+' CLEAR','+'+250*S.wave);if(S.wave%2===0){const p=spotNear(P.x,P.z,8,30);if(p)addPick('crate',p[0],p[1]);}
+  if(S.left<=0&&n===0){S.live=false;S.t=7;G.score+=250*S.wave;sndUi('obj');banner('WAVE '+S.wave+' CLEAR','+'+250*S.wave);if(S.wave%2===0){const p=spotNear(cx,cz,8,30);if(p)coCrate(p[0],p[1]);}
     for(const a of allies){if(a.down){a.down=false;a.alive=true;a.up.rotation.z=0;}a.hp=a.maxHp;}}}
 function missionUpdate(dt){updWaves(dt);if(G.mode==='mission')stageUpdate(dt);else survivalUpdate(dt);}
 // =====================================================================
@@ -2187,6 +2198,11 @@ const mpMe=()=>MP.players.get(MP.me);
 const mpIsMate=pl=>pl.id!==MP.me&&pl.team!==0&&!!mpMe()&&pl.team===mpMe().team;
 // in versus the hostiles are the other players; everywhere else they are the AI soldiers
 const hostList=()=>(MP.on&&MP.phase==='play'&&mpMode().vs)?MP.rivals:foes;
+// everyone the hostiles can go after: me, and (on the host's machine in co-op) the other players
+function humans(){const L=[];if(P.alive)L.push(P);for(let k=0;k<MP.mates.length;k++)if(MP.mates[k].alive)L.push(MP.mates[k]);return L;}
+// more players, more hostiles. Two players get the single-player numbers: the second one takes the place of the AI squad.
+function coScale(){if(!mpCoop())return 1;const n=MP.players.size;return n<=2?1:Math.min(2,1+.22*(n-2));}
+const foeCap=()=>Q.maxFoes+(mpCoop()?Math.min(6,2*(MP.players.size-1)):0);
 function cleanName(s){s=String(s==null?'':s).replace(/[^\w \-.áéíóúñÁÉÍÓÚÑüÜ]/g,'').trim().slice(0,12).toUpperCase();return s||'PLAYER';}
 function mpPlayer(id,name){return{id,name:cleanName(name),team:0,cls:0,k:0,d:0,sc:0,alive:false,conn:null,rx:performance.now(),s:null,buf:[],hp:100,w:0,fl:0,x:0,y:0,z:0,
   nx:0,ny:0,nz:0,nyaw:0,npitch:0,out:[],reveal:0,use:false};}
@@ -2426,7 +2442,8 @@ function vsEnd(){if(!MP.host||MP.phase!=='play')return;MP.phase='end';const rows
 
 // ---------- hooks the session layer calls; the co-op modes add to these in their own file
 function mpStartExtra(){return mpMode().vs?{t:MP.cfg.mins*60}:coStartExtra();}
-function mpLateJoin(pl){const X=mpMode().vs?{t:MP.tLeft,late:1}:coStartExtra(true);netTx(pl.conn,['start',mpLobby(),X]);}
+function mpLateJoin(pl){if(mpMode().coop){for(const a of allies)removeSoldier(a);allies.length=0;} // the AI squad makes way for a second player
+  const X=mpMode().vs?{t:MP.tLeft,late:1}:coStartExtra(true);netTx(pl.conn,['start',mpLobby(),X]);}
 function mpAfterDeath(){if(mpMode().vs)vsCheck();else coAfterDeath();}
 function mpAfterLeave(){if(mpMode().vs){let n=0;for(const p of MP.players.values())n++;if(n<2&&MP.phase==='play'){killFeed('','Everyone else has left');}}}
 function mpSnapExtra(m){if(mpMode().coop)coSnap(m);}
@@ -2495,24 +2512,104 @@ function mpHud(dt){boardT-=dt;if(boardT>0)return;boardT=.4;const B=mpEl.mpBoard,
 function mpWorldOff(){for(const pl of MP.players.values())mpForget(pl);MP.rivals.length=0;MP.mates.length=0;unlock();G.menuUp=false;G.state='menu';G.mode='mission';el.hud.hidden=true;mpEl.mpBoard.hidden=true;
   resetWorldState();removeJammer(false);gunRoot.visible=false;clearFeeds();setDiff(SAVE.diff|0);camera.fov=P.baseFov;camera.updateProjectionMatrix();}
 function mpShowEnd(Rr){MP.phase='end';MP.results=Rr;for(const pl of MP.players.values())if(pl.s)pl.s.g.visible=false;unlock();G.menuUp=false;G.state='win';el.hud.hidden=true;gunRoot.visible=false;mpClose();
-  const rows=Array.isArray(Rr.rows)?Rr.rows:[];showMenu('mpend',String(Rr.title||'Game over'),(Rr.coop?'':'Kills / deaths for each player. ')+(MP.host?'Go back to the lobby to play again or change the mode.':'The host can take everyone back to the lobby for another round.'),
+  const rows=Array.isArray(Rr.rows)?Rr.rows:[];showMenu('mpend',String(Rr.title||'Game over'),(Rr.coop?'Score for each player. ':'Kills / deaths for each player. ')+(MP.host?'Go back to the lobby to play again or change the mode.':'The host can take everyone back to the lobby for another round.'),
     rows.slice(0,8).map((r,k)=>[(k+1)+'. '+cleanName(r[0])+(Rr.teams?' · T'+(r[3]|0):''),Rr.coop?String(r[5]|0):(r[1]|0)+' / '+(r[2]|0)]));}
 function mpBackToLobby(){mpWorldOff();showMenu('main','Multiplayer','');mpEl.mpMsg._auto=true;mpSay('');mpOpen();}
 function mpDropped(msg){mpReset();mpWorldOff();showMenu('main','Multiplayer','');mpOpen('',msg);mpEl.mpMsg._auto=false;}
 // =====================================================================
-// 08g CO-OP (placeholder until the co-op modes are written)
+// 08g CO-OP: survival and the story mission for several players. The host's machine runs the hostile soldiers and the
+// mission. Guests see the hostiles as stand-ins, report the hits they score, and are told when they are hit themselves.
 // =====================================================================
-const CO_READY=false;
-function coStartExtra(){return{};}
+const FKINDS=['rifle','rush','heavy','mark'];
+MP.fshots=[];MP.fmap=new Map();MP.fseq=0;MP.allDeadT=0;
+function coDiff(d){d=clamp(d|0,0,2);G.diff=[.55,.85,1.15][d];G.dmgK=[.8,1,1.15][d];} // for this game only: the single-player setting is not touched
+function coRefill(){for(const w of P.slots){const D=WDEF[w.id];w.mag=D.mag;w.res=Math.max(w.res,Math.round(D.max*.55));}P.nades=Math.max(2,P.nades);}
+function coStartExtra(late){return{late:late?1:0,stage:late?Math.max(0,MS.i):clamp(MP.cfg.stage|0,0,ST.length-2),sx:Math.round(P.x),sz:Math.round(P.z)};}
+function coBegin(X){X=X||{};coDiff(MP.cfg.diff);MP.fmap.clear();MP.fshots.length=0;MP.fseq=0;MP.allDeadT=0;const surv=MP.cfg.mode==='surv';
+  if(MP.host){if(surv)startSurvival();else startMission(clamp(X.stage|0,0,ST.length-2));return;}
+  // a guest starts in an empty town that the host then fills in
+  G.mode=surv?'survival':'mission';resetWorldState();removeJammer(false);for(const a of allies)removeSoldier(a);allies.length=0;MS.st=null;MS.i=-1;MS.surv=null;MS.phase='';MS.defT=0;
+  G.score=0;G.stats={kills:0,heads:0,shots:0,hits:0,deaths:0,time:0};giveLoadout();OBJ.show=false;OBJ.text='';OBJ.sub='';OBJ.prog=0;
+  const sp=surv?[-4,16,0]:ST[clamp(X.stage|0,0,ST.length-2)].spawn,bx=X.late&&isFinite(+X.sx)?+X.sx:sp[0],bz=X.late&&isFinite(+X.sz)?+X.sz:sp[1],p=spotNear(bx,bz,5,30)||[bx,bz];
+  P.x=p[0];P.z=p[1];P.y=0;P.yaw=sp[2];P.spawnT=2;camera.rotation.z=0;}
+function coStageRx(i,force){if(i===MS.i&&!force)return;MS.i=i;MS.st=i>=0&&i<ST.length?ST[i]:null;G.stage=Math.max(0,i);const st=MS.st;MS.phase='';
+  if(!st||!(st.heli||st.type==='reach'))hideHeli();}
+
+// ---------- host: what the guests need to know about the hostiles and the mission
+function coFoeShot(s,hx,hy,hz,t,hit){if(!mpCoop()||MP.fshots.length>=16)return;MP.fshots.push([s.nid,Math.round(hx*10),Math.round(hy*10),Math.round(hz*10),t===P?MP.me:(t&&t.pid)||0,hit?1:0]);}
+function coSnap(m){m[4]=0;m[5]=0;m[6]=0;
+  if(snapN%2===0){const F=[];for(let k=0;k<foes.length;k++){const s=foes[k];if(!s.alive)continue;
+      const fl=((s.wantCrouch||s.crouch>.5)?1:0)|(s.lowered?2:0)|(s.revealT>0?4:0)|(s.isStatic?8:0)|((s.laser&&s.laser.visible)?16:0),
+        a=[s.nid,Math.max(0,FKINDS.indexOf(s.kind)),Math.round(s.x*10),Math.round(s.z*10),Math.round(s.y0*10),Math.round(angDiff(s.yaw,0)*100),fl,Math.round(clamp(s.aimP,-1,1)*100)];
+      if(fl&16)a.push(s.target===P?MP.me:(s.target&&s.target.pid)||0);F.push(a);}m[4]=F;}
+  if(MP.fshots.length){m[5]=MP.fshots;MP.fshots=[];}
+  if(snapN%5===0){const S=MS.surv;m[6]=[G.mode==='survival'?1:0,MS.i,OBJ.text,OBJ.sub,Math.round(OBJ.prog*100),Math.round(OBJ.x),Math.round(OBJ.z),Math.round(OBJ.y*10),OBJ.show?1:0,
+      (MS.jam?1:0)|(MS.phase==='defend'?2:0),Math.round(MS.defT*10),S?S.wave:0];}}
+function coFoeKilled(s,by,head,pts){if(!mpCoop())return;const pl=MP.players.get(by|0);if(pl){pl.k++;pl.sc+=pts;}mpEvent('fk',0,[s.nid,s.fall,by|0,head?1:0,pts]);}
+function coCrate(x,z){addPick('crate',x,z);if(MP.on&&MP.host)mpEvent('crate',0,[Math.round(x*10)/10,Math.round(z*10)/10]);}
+function mpHurtMate(s,dmg,fx,fz){s.flinch=.22;mpEvent('ah',s.pid,[Math.round(dmg*10)/10,Math.round(fx),Math.round(fz)]);}
+MPE.fh=(from,a)=>{if(!MP.host)return;const nid=a[0]|0;let s=null;for(let k=0;k<foes.length;k++)if(foes[k].nid===nid){s=foes[k];break;}if(!s||!s.alive)return;
+  const pl=MP.players.get(from),w=a[4]|0;MP.hitBy=from;try{damageSoldier(s,clamp(+a[1]||0,0,400),a[2]|0,pl?pl.x:s.x,pl?pl.z:s.z,false,!!a[3],w<WIDS.length?WDEF[WIDS[w]]:null);}finally{MP.hitBy=0;}};
+// everybody down at the same moment: back to the checkpoint in the mission, the end of the line in survival
+function coWipe(){if(G.mode==='survival'){coFinish(false);return;}radio('COMMAND','Everyone is down. Regroup at the last checkpoint.');restartCheckpoint();camera.rotation.z=0;}
+function coFinish(won){if(!MP.host||MP.phase!=='play')return;MP.phase='end';const rows=Array.from(MP.players.values(),p=>[p.name,p.k,p.d,p.team,p.id,p.sc]);rows.sort((a,b)=>b[5]-a[5]);
+  const Rr={title:won?'Mission complete':G.mode==='survival'?'Overrun at wave '+(MS.surv?MS.surv.wave:0):'Mission failed',rows,coop:1};
+  for(const pl of MP.players.values())netTx(pl.conn,['end',Rr]);mpBroadcastLobby();hideHeli();mpShowEnd(Rr);}
 function coAfterDeath(){}
-function coSnap(m){}
-function coSnapRx(d){}
-function coBegin(X){}
-function coTick(dt,raw){}
-function coDead(dt){}
-function coPuppets(dt){}
-function mpHurtMate(s,dmg,fx,fz){}
-function mpFoeHit(s,dmg,zone,D,explosive,fx,fz){}
+function coTick(dt,raw){
+  if(MP.host){if(humans().length===0){MP.allDeadT+=raw;if(MP.allDeadT>2.4){MP.allDeadT=0;coWipe();}}else MP.allDeadT=0;return;}
+  const st=MS.st;if(!st)return;
+  if(st.heli){if(!heli.g)makeHeli();if(!heli.on){heli.on=true;heli.landed=false;heli.g.visible=true;}updHeli(dt,OBJ.prog);}else if(st.type==='reach'){if(!heli.g)makeHeli();heli.on=true;heli.g.visible=true;updHeli(dt,1);}
+  if(st.type==='plant'&&P.alive){const d=Math.hypot(P.x-st.x,P.z-st.z);
+    if(MS.phase===''&&MS.jam&&d<st.r)G.prompt='Hold <b>'+(isTouch?'USE':'F')+'</b> to plant the charge';else if(MS.phase==='defend'&&d<11&&MS.defT<8)G.prompt='Move away from the truck';}}
+// down in co-op: back after a few seconds next to a team mate who is still standing
+function coDead(dt){const H=humans();if(!H.length){G.prompt='Everyone is down';return;}if(MP.respT>0){G.prompt='Back in <b>'+Math.ceil(MP.respT)+'</b>';return;}
+  let m=H[0],bd=1e9;for(const h of H){const d=Math.hypot(h.x-P.x,h.z-P.z);if(d<bd){bd=d;m=h;}}const p=spotNear(m.x,m.z,6,30)||[m.x,m.z];
+  plReset();coRefill();P.x=p[0];P.z=p[1];P.y=0;P.yaw=m.yaw||0;P.spawnT=2.5;camera.rotation.z=0;killFeed('','Back in the fight');}
+
+// ---------- guest: the hostiles as the host reports them
+function mpFoeHit(s,dmg,zone,D,explosive){G.hitT=.14;G.hitKill=false;sndUi('hit');s.flinch=.22;mpEvent('fh',1,[s.nid,Math.round(dmg*10)/10,zone,explosive?1:0,D?widx(curW().id):W_KNIFE]);}
+MPE.ah=(from,a)=>{if(from!==1||!P.alive)return;P.lastBy=0;P.lastT=-99;hurt(clamp(+a[0]||0,0,300),isFinite(+a[1])?+a[1]:P.x,isFinite(+a[2])?+a[2]:P.z);};
+MPE.fk=(from,a)=>{if(from!==1)return;const s=MP.fmap.get(a[0]|0);if(s&&s.alive){s.alive=false;s.deadT=0;s.fall=a[1]<0?-1:1;s.wp.scale.setScalar(.001);if(s.laser){scene.remove(s.laser);s.laser=null;}foeLoot(s);}
+  const by=a[2]|0,pl=MP.players.get(by),pts=a[4]|0;if(pl){pl.k++;pl.sc+=pts;}
+  if(by===MP.me){G.stats.kills++;if(a[3])G.stats.heads++;G.score+=pts;G.hitT=.2;G.hitKill=true;sndUi('kill');killFeed('+'+pts,a[3]?'Headshot':s?s.K.label:'Hostile');}};
+MPE.crate=(from,a)=>{if(from===1&&isFinite(+a[0]+ +a[1]))addPick('crate',+a[0],+a[1]);};
+MPE.rad=(from,a)=>{if(from===1)radio(String(a[0]).slice(0,16),String(a[1]).slice(0,240));};
+MPE.ban=(from,a)=>{if(from!==1)return;const t=String(a[0]).slice(0,60);banner(t,String(a[1]||'').slice(0,90));if(/COMPLETE|CLEAR/.test(t))sndUi('obj');};
+MPE.jam=from=>{if(from!==1)return;if(MS.jam)removeJammer(true,true);else explode(44,1.2,-478.5,9.5,200,true,true,0);};
+MPE.ckpt=(from,a)=>{if(from!==1)return;resetWorldState();MP.fmap.clear();removeJammer(false);coStageRx(clamp(a[0]|0,0,ST.length-1),true);const sp=MS.st.spawn,p=spotNear(sp[0],sp[1],5,30)||sp;
+  P.x=p[0];P.z=p[1];P.y=0;P.yaw=sp[2];coRefill();P.spawnT=2;camera.rotation.z=0;killFeed('','Back to the checkpoint');};
+function coSnapRx(d){const now=performance.now(),F=d[4];
+  if(Array.isArray(F)){MP.fseq++;
+    for(const a of F){if(!Array.isArray(a))continue;const nid=a[0]|0,x=a[2]/10,z=a[3]/10,y0=a[4]/10,yaw=a[5]/100;if(!isFinite(x+z+y0+yaw))continue;let s=MP.fmap.get(nid);
+      if(!s){s=addSoldier(1,FKINDS[a[1]]||'rifle',x,z,{y0,yaw,aware:true,isStatic:!!(a[6]&8)});s.net=true;s.nid=nid;s.nb=[];s.lowered=false;MP.fmap.set(nid,s);}
+      if(!s.alive)continue;s.seen=MP.fseq;s.nfl=a[6]|0;s.aimP=(a[7]|0)/100;s.ntp=a[8]|0;s.nb.push({t:now,x,z,y0,yaw});if(s.nb.length>6)s.nb.shift();if((s.nfl&4)&&s.revealT<.5)s.revealT=.5;}
+    // a hostile the host no longer lists (cleared at a restart, say) goes from here as well
+    for(const e of Array.from(MP.fmap)){const s=e[1];if(!s.alive){MP.fmap.delete(e[0]);continue;}
+      if(MP.fseq-s.seen>12){MP.fmap.delete(e[0]);const i=foes.indexOf(s);if(i>=0)foes.splice(i,1);removeSoldier(s);if(s.laser){scene.remove(s.laser);s.laser=null;}}}}
+  const SH=d[5];if(Array.isArray(SH))for(const q of SH)if(Array.isArray(q))coShowFoeShot(q);
+  const O=d[6];if(Array.isArray(O)){G.mode=O[0]?'survival':'mission';coStageRx(O[1]|0,false);OBJ.text=String(O[2]).slice(0,120);OBJ.sub=String(O[3]).slice(0,120);OBJ.prog=clamp((O[4]|0)/100,0,1);
+    OBJ.x=+O[5]||0;OBJ.z=+O[6]||0;OBJ.y=(+O[7]||18)/10;OBJ.show=!!O[8];const fl=O[9]|0;MS.phase=(fl&2)?'defend':'';MS.defT=(+O[10]||0)/10;
+    if((fl&1)&&!MS.jam)makeJammer();else if(!(fl&1)&&MS.jam)removeJammer(false);
+    if(O[0]){if(!MS.surv)MS.surv={wave:0,t:0,live:false,left:0};MS.surv.wave=O[11]|0;}}}
+function coShowFoeShot(q){const s=MP.fmap.get(q[0]|0);if(!s||!s.alive)return;const hx=q[1]/10,hy=q[2]/10,hz=q[3]/10;if(!isFinite(hx+hy+hz))return;
+  const fx=-Math.sin(s.yaw),fz=-Math.cos(s.yaw),mark=s.kind==='mark',mx=s.x+fx*.85,my=s.y0+(mark?1.4:(1.36-s.crouch*.42)*s.sc),mz=s.z+fz*.85;
+  s.revealT=3;sndShot(s.K.snd,s.x,s.z,false);puff(mx,my,mz,0xffc45a,mark?.4:.26,.06,.05,1,0,0,0,true);if(mark||q[5]||R()<.6)tracer(mx,my,mz,hx,hy,hz,mark?0xfff6d0:0xffd27a);
+  if(!q[5]&&Math.hypot(hx-P.x,hz-P.z)<45)dust(hx,hy,hz,1);if((q[4]|0)===MP.me&&!q[5]&&R()<.5){sndWhiz();G.supp=Math.min(1,G.supp+.22);}}
+// guests run this instead of the hostiles' own thinking: glide each stand-in between the host's reports
+function coPuppets(dt){const rt=performance.now()-150;if(G.supp>0)G.supp=Math.max(0,G.supp-dt*.5);G.lkp.age+=dt;
+  for(let k=foes.length-1;k>=0;k--){const s=foes[k];
+    if(!s.alive){if(!updCorpse(s,dt)){foes.splice(k,1);corpses.push(s);if(corpses.length>10)removeSoldier(corpses.shift());}continue;}
+    if(s.flinch>0)s.flinch-=dt;if(s.revealT>0)s.revealT-=dt;const b=s.nb;if(!b||!b.length)continue;
+    let i=b.length-1;while(i>0&&b[i-1].t>rt)i--;const c=b[i],a=b[i>0?i-1:0],u=c.t>a.t?clamp((rt-a.t)/(c.t-a.t),0,1.5):1,x=a.x+(c.x-a.x)*u,z=a.z+(c.z-a.z)*u,moved=Math.hypot(x-s.x,z-s.z),sp=moved/Math.max(dt,1e-4);
+    s.x=x;s.z=z;s.y0=a.y0+(c.y0-a.y0)*u;s.yaw=a.yaw+angDiff(c.yaw,a.yaw)*u;s.crouch+=clamp(((s.nfl&1)?1:0)-s.crouch,-dt*4.5,dt*4.5);s.lowered=!!(s.nfl&2);
+    s.moveAmt=lerp(s.moveAmt,clamp(sp/3,0,1),Math.min(1,dt*10));s.run=sp>4.6;if(moved>0&&moved<3){s.ph+=moved*(s.run?2.1:2.6);s.stepD+=moved;if(s.stepD>2.5){s.stepD=0;sndStepAt(x,z);}}
+    animSoldier(s,dt);s.g.position.set(x,s.y0,z);s.g.rotation.y=s.yaw;
+    // a marksman's sighting laser
+    if(s.nfl&16){const tp=s.ntp|0,pl=MP.players.get(tp),tx=tp===MP.me?P.x:pl?pl.x:x,ty=tp===MP.me?P.y+1.2:pl?pl.y+1.2:1.2,tz=tp===MP.me?P.z:pl?pl.z:z,fx=-Math.sin(s.yaw),fz=-Math.cos(s.yaw);
+      if(!s.laser){const g=new T.BufferGeometry();g.setAttribute('position',new T.BufferAttribute(new Float32Array(6),3));s.laser=new T.Line(g,laserMat);s.laser.frustumCulled=false;scene.add(s.laser);}
+      const q=s.laser.geometry.attributes.position;q.setXYZ(0,x+fx*.85,s.y0+1.4,z+fz*.85);q.setXYZ(1,tx,ty,tz);q.needsUpdate=true;s.laser.visible=true;}
+    else if(s.laser)s.laser.visible=false;}}
 // =====================================================================
 // 09a HUD: objective panel, compass tape, rotating minimap, waypoint, feeds, tactical map, menus
 // =====================================================================
@@ -2524,9 +2621,10 @@ function setT(e,v){if(e._v!==v){e._v=v;e.textContent=v;}}
 function setH(e,v){if(e._v!==v){e._v=v;e.innerHTML=v;}}
 const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 let bannerT=0;
-function banner(t,s){el.banT.textContent=t;el.banS.textContent=s||'';el.banS.hidden=!s;el.banner.classList.add('on');bannerT=3;}
+function banner(t,s){if(MP.on&&MP.host&&mpMode().coop)mpEvent('ban',0,[t,s||'']); // in co-op the host's banners and radio are everybody's
+  el.banT.textContent=t;el.banS.textContent=s||'';el.banS.hidden=!s;el.banner.classList.add('on');bannerT=3;}
 const feedL=[],killL=[];
-function radio(who,text){const p=document.createElement('p');p.innerHTML='<b>'+esc(who)+'</b> '+esc(text);el.feed.appendChild(p);feedL.push({p,t:6.5});if(feedL.length>3)el.feed.removeChild(feedL.shift().p);sndUi('radio');}
+function radio(who,text){if(MP.on&&MP.host&&mpMode().coop&&who!=='TIP')mpEvent('rad',0,[who,text]);const p=document.createElement('p');p.innerHTML='<b>'+esc(who)+'</b> '+esc(text);el.feed.appendChild(p);feedL.push({p,t:6.5});if(feedL.length>3)el.feed.removeChild(feedL.shift().p);sndUi('radio');}
 function killFeed(pts,label){const p=document.createElement('p');p.innerHTML='<b>'+esc(pts)+'</b> '+esc(label);el.kills.appendChild(p);killL.push({p,t:2.6});if(killL.length>5)el.kills.removeChild(killL.shift().p);}
 function clearFeeds(){for(const f of feedL)el.feed.removeChild(f.p);feedL.length=0;for(const f of killL)el.kills.removeChild(f.p);killL.length=0;}
 function colonia(x,z){if(inCemetery(x,z))return'Panteón Municipal';if(z>6)return x>10?'Col. Deportiva':z>430?'Col. Molino':'Col. La Laguna';if(x>454)return z<-610?'Col. División del Norte':'Col. Guadalupe Victoria';
@@ -2661,7 +2759,7 @@ function pause(){if(G.state!=='play')return;
 function toMain(){unlock();G.state='menu';G.menuUp=false;G.mode='mission';setDiff(SAVE.diff|0);mpEl.mpBoard.hidden=true;el.hud.hidden=true;resetWorldState();removeJammer(false);for(const a of allies)a.g.visible=false;gunRoot.visible=false;clearFeeds();camera.fov=P.baseFov;camera.updateProjectionMatrix();
   showMenu('main','Operación Insurgentes','A mercenary force has seized the town and the crossroads where Highway 1 turns east for Loreto. Lead fireteam Halcón up Blvd. Benito Juárez, take the Glorieta, and clear the Plaza Principal.');}
 function onPlayerDeath(){if(MP.on){mpDied();return;}G.state='dead';IN.fire=false;unlock();saveGame();}
-function missionWon(){G.state='win';unlock();hideHeli();SAVE.stage=0;if(G.score>SAVE.best)SAVE.best=G.score;saveGame();el.hud.hidden=true;gunRoot.visible=false;
+function missionWon(){if(MP.on){coFinish(true);return;}G.state='win';unlock();hideHeli();SAVE.stage=0;if(G.score>SAVE.best)SAVE.best=G.score;saveGame();el.hud.hidden=true;gunRoot.visible=false;
   showMenu('win','Mission complete','Fireteam Halcón is out. Ciudad Insurgentes and the Highway 1 crossroads are back in friendly hands.',statList().concat([['Best',SAVE.best]]));}
 el.btnStart.addEventListener('click',ev=>{if(menuMode==='lost'){location.reload();return;}initAudio();
   if(menuMode==='pause'){enterPlay(ev);return;}
@@ -2747,7 +2845,7 @@ function tick(now){requestAnimationFrame(tick);if(G.state==='lost')return;const 
       showMenu('dead','You are down',G.mode==='mission'?'Halcón, regroup. You restart at the last checkpoint with your squad.':'You held the Glorieta through wave '+(MS.surv?MS.surv.wave:0)+'.',statList());}}
   fxUpdate(dt);sky.position.copy(camera.position);sierra.position.set(camera.position.x,0,camera.position.z);sunSprite.position.copy(camera.position).addScaledVector(SUN,2000);if(Q.shadows)sunFollow(camera.position.x,camera.position.z);
   cullChunks(camera.position.x,camera.position.z);renderer.render(scene,camera);}
-window.__game={buildMs:Math.round(performance.now()-T0),sim:(n,dt)=>{for(let i=0;i<n;i++){frame++;if(G.state==='play')simStep(dt,.01);else if(G.state==='dead'){updAI(dt);updNades(dt);updProps(dt);}fxUpdate(dt);}},setShadows,BOT,makeField,flow,flowDir,los,eyeY,chestY,camera,renderer,scene,belfries,buildings,lowCover,G,P,MS,OBJ,foes,allies,ST,IN,startMission,startSurvival,stageStart,stageDone,enterPlay,MP,NET,ARENAS,mpCreate,mpJoin,mpStart,mpSetCfg,mpSetMe,mpLeave,mpEvent,mpOpen,hurt,toMain,pause,picks,nades,colliders,Q,WDEF,addPick,explode,spawnWave,restartCheckpoint,SAVE,showWeapon,addSoldier,animSoldier,clearSoldiers,gunRoot,updCamera,cullChunks,cars,BLOCKS,chunkMeshes,freeSpot,
+window.__game={buildMs:Math.round(performance.now()-T0),sim:(n,dt)=>{for(let i=0;i<n;i++){frame++;if(G.state==='play')simStep(dt,.01);else if(G.state==='dead'){updAI(dt);updNades(dt);updProps(dt);}fxUpdate(dt);}},setShadows,BOT,makeField,flow,flowDir,los,eyeY,chestY,camera,renderer,scene,belfries,buildings,lowCover,G,P,MS,OBJ,foes,allies,ST,IN,startMission,startSurvival,stageStart,stageDone,enterPlay,MP,NET,ARENAS,mpCreate,mpJoin,mpStart,mpSetCfg,mpSetMe,mpLeave,mpEvent,mpOpen,hurt,toMain,pause,explode,humans,damageProp,picks,nades,colliders,Q,WDEF,addPick,explode,spawnWave,restartCheckpoint,SAVE,showWeapon,addSoldier,animSoldier,clearSoldiers,gunRoot,updCamera,cullChunks,cars,BLOCKS,chunkMeshes,freeSpot,
   cam:(x,y,z,tx,ty,tz)=>{camera.position.set(x,y,z);camera.lookAt(tx,ty,tz);}};
 el.btnStart.disabled=false;el.btnMapMenu.hidden=false;toMain();mpAuto();requestAnimationFrame(tick);
 })();

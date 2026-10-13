@@ -9,9 +9,10 @@ function setT(e,v){if(e._v!==v){e._v=v;e.textContent=v;}}
 function setH(e,v){if(e._v!==v){e._v=v;e.innerHTML=v;}}
 const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 let bannerT=0;
-function banner(t,s){el.banT.textContent=t;el.banS.textContent=s||'';el.banS.hidden=!s;el.banner.classList.add('on');bannerT=3;}
+function banner(t,s){if(MP.on&&MP.host&&mpMode().coop)mpEvent('ban',0,[t,s||'']); // in co-op the host's banners and radio are everybody's
+  el.banT.textContent=t;el.banS.textContent=s||'';el.banS.hidden=!s;el.banner.classList.add('on');bannerT=3;}
 const feedL=[],killL=[];
-function radio(who,text){const p=document.createElement('p');p.innerHTML='<b>'+esc(who)+'</b> '+esc(text);el.feed.appendChild(p);feedL.push({p,t:6.5});if(feedL.length>3)el.feed.removeChild(feedL.shift().p);sndUi('radio');}
+function radio(who,text){if(MP.on&&MP.host&&mpMode().coop&&who!=='TIP')mpEvent('rad',0,[who,text]);const p=document.createElement('p');p.innerHTML='<b>'+esc(who)+'</b> '+esc(text);el.feed.appendChild(p);feedL.push({p,t:6.5});if(feedL.length>3)el.feed.removeChild(feedL.shift().p);sndUi('radio');}
 function killFeed(pts,label){const p=document.createElement('p');p.innerHTML='<b>'+esc(pts)+'</b> '+esc(label);el.kills.appendChild(p);killL.push({p,t:2.6});if(killL.length>5)el.kills.removeChild(killL.shift().p);}
 function clearFeeds(){for(const f of feedL)el.feed.removeChild(f.p);feedL.length=0;for(const f of killL)el.kills.removeChild(f.p);killL.length=0;}
 function colonia(x,z){if(inCemetery(x,z))return'Panteón Municipal';if(z>6)return x>10?'Col. Deportiva':z>430?'Col. Molino':'Col. La Laguna';if(x>454)return z<-610?'Col. División del Norte':'Col. Guadalupe Victoria';

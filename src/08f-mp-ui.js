@@ -62,7 +62,7 @@ function mpHud(dt){boardT-=dt;if(boardT>0)return;boardT=.4;const B=mpEl.mpBoard,
 function mpWorldOff(){for(const pl of MP.players.values())mpForget(pl);MP.rivals.length=0;MP.mates.length=0;unlock();G.menuUp=false;G.state='menu';G.mode='mission';el.hud.hidden=true;mpEl.mpBoard.hidden=true;
   resetWorldState();removeJammer(false);gunRoot.visible=false;clearFeeds();setDiff(SAVE.diff|0);camera.fov=P.baseFov;camera.updateProjectionMatrix();}
 function mpShowEnd(Rr){MP.phase='end';MP.results=Rr;for(const pl of MP.players.values())if(pl.s)pl.s.g.visible=false;unlock();G.menuUp=false;G.state='win';el.hud.hidden=true;gunRoot.visible=false;mpClose();
-  const rows=Array.isArray(Rr.rows)?Rr.rows:[];showMenu('mpend',String(Rr.title||'Game over'),(Rr.coop?'':'Kills / deaths for each player. ')+(MP.host?'Go back to the lobby to play again or change the mode.':'The host can take everyone back to the lobby for another round.'),
+  const rows=Array.isArray(Rr.rows)?Rr.rows:[];showMenu('mpend',String(Rr.title||'Game over'),(Rr.coop?'Score for each player. ':'Kills / deaths for each player. ')+(MP.host?'Go back to the lobby to play again or change the mode.':'The host can take everyone back to the lobby for another round.'),
     rows.slice(0,8).map((r,k)=>[(k+1)+'. '+cleanName(r[0])+(Rr.teams?' · T'+(r[3]|0):''),Rr.coop?String(r[5]|0):(r[1]|0)+' / '+(r[2]|0)]));}
 function mpBackToLobby(){mpWorldOff();showMenu('main','Multiplayer','');mpEl.mpMsg._auto=true;mpSay('');mpOpen();}
 function mpDropped(msg){mpReset();mpWorldOff();showMenu('main','Multiplayer','');mpOpen('',msg);mpEl.mpMsg._auto=false;}

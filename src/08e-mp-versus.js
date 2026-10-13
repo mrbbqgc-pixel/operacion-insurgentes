@@ -48,7 +48,8 @@ function vsEnd(){if(!MP.host||MP.phase!=='play')return;MP.phase='end';const rows
 
 // ---------- hooks the session layer calls; the co-op modes add to these in their own file
 function mpStartExtra(){return mpMode().vs?{t:MP.cfg.mins*60}:coStartExtra();}
-function mpLateJoin(pl){const X=mpMode().vs?{t:MP.tLeft,late:1}:coStartExtra(true);netTx(pl.conn,['start',mpLobby(),X]);}
+function mpLateJoin(pl){if(mpMode().coop){for(const a of allies)removeSoldier(a);allies.length=0;} // the AI squad makes way for a second player
+  const X=mpMode().vs?{t:MP.tLeft,late:1}:coStartExtra(true);netTx(pl.conn,['start',mpLobby(),X]);}
 function mpAfterDeath(){if(mpMode().vs)vsCheck();else coAfterDeath();}
 function mpAfterLeave(){if(mpMode().vs){let n=0;for(const p of MP.players.values())n++;if(n<2&&MP.phase==='play'){killFeed('','Everyone else has left');}}}
 function mpSnapExtra(m){if(mpMode().coop)coSnap(m);}

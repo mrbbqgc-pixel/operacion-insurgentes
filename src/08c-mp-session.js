@@ -14,6 +14,11 @@ const mpMe=()=>MP.players.get(MP.me);
 const mpIsMate=pl=>pl.id!==MP.me&&pl.team!==0&&!!mpMe()&&pl.team===mpMe().team;
 // in versus the hostiles are the other players; everywhere else they are the AI soldiers
 const hostList=()=>(MP.on&&MP.phase==='play'&&mpMode().vs)?MP.rivals:foes;
+// everyone the hostiles can go after: me, and (on the host's machine in co-op) the other players
+function humans(){const L=[];if(P.alive)L.push(P);for(let k=0;k<MP.mates.length;k++)if(MP.mates[k].alive)L.push(MP.mates[k]);return L;}
+// more players, more hostiles. Two players get the single-player numbers: the second one takes the place of the AI squad.
+function coScale(){if(!mpCoop())return 1;const n=MP.players.size;return n<=2?1:Math.min(2,1+.22*(n-2));}
+const foeCap=()=>Q.maxFoes+(mpCoop()?Math.min(6,2*(MP.players.size-1)):0);
 function cleanName(s){s=String(s==null?'':s).replace(/[^\w \-.áéíóúñÁÉÍÓÚÑüÜ]/g,'').trim().slice(0,12).toUpperCase();return s||'PLAYER';}
 function mpPlayer(id,name){return{id,name:cleanName(name),team:0,cls:0,k:0,d:0,sc:0,alive:false,conn:null,rx:performance.now(),s:null,buf:[],hp:100,w:0,fl:0,x:0,y:0,z:0,
   nx:0,ny:0,nz:0,nyaw:0,npitch:0,out:[],reveal:0,use:false};}

@@ -32,7 +32,7 @@ function aliveFoes(tag){let n=0;for(let k=0;k<foes.length;k++)if(foes[k].alive&&
 function foesNear(x,z,r){let n=0;for(let k=0;k<foes.length;k++){const s=foes[k];if(s.alive&&s.y0<.5&&Math.hypot(s.x-x,s.z-z)<r)n++;}return n;}
 function spotNear(x,z,r,tries){for(let k=0;k<(tries||30);k++){const a=R()*TAU,d=Math.sqrt(R())*r,px=x+Math.cos(a)*d,pz=z+Math.sin(a)*d;if(freeSpot(px,pz))return[px,pz];}return null;}
 function garrison(grp,tag){const covers=lowCover.filter(c=>Math.hypot(c[0]-grp.x,c[1]-grp.z)<grp.r);
-  for(const kind in grp.units)for(let k=0;k<grp.units[kind];k++){let p=null;if(covers.length&&R()<.7){const c=RP(covers);p=spotNear(c[0],c[1],2.6,12);}
+  for(const kind in grp.units)for(let k=0,n=Math.max(1,Math.round(grp.units[kind]*coScale()));k<n;k++){let p=null;if(covers.length&&R()<.7){const c=RP(covers);p=spotNear(c[0],c[1],2.6,12);}
     if(!p)p=spotNear(grp.x,grp.z,grp.r,40);if(!p)continue;const o={tag,post:{x:p[0],z:p[1]},yaw:Math.atan2(-(P.x-p[0]),-(P.z-p[1]))+R2(-1.2,1.2)};
     if(kind==='rifle'&&R()<.35){const q=spotNear(p[0],p[1],14,10);if(q)o.post2={x:q[0],z:q[1]};}addSoldier(1,kind,p[0],p[1],o);}}
 function spawnMark(pos,tag){return addSoldier(1,'mark',pos.x,pos.z,{y0:pos.y,isStatic:true,tag,yaw:Math.atan2(-(P.x-pos.x),-(P.z-pos.z))});}
@@ -40,10 +40,10 @@ function roofSpot(x,z,minD,maxD){let best=null,bs=-1;for(let k=0;k<buildings.len
     const sc=R();if(sc>bs){bs=sc;best=b;}}
   return best?{x:clamp(x,best.x-best.w/2+.9,best.x+best.w/2-.9),y:best.h,z:clamp(z,best.z-best.d/2+.9,best.z+best.d/2-.9)}:null;}
 // reinforcements arrive from a street corner out of the player's sight and head for (tx,tz)
-function spawnWave(n,kinds,tx,tz,dir,tag){n=Math.min(n,Q.maxFoes+2-aliveFoes());if(n<=0)return 0;let best=null,bs=-1e9;
-  for(let k=0;k<50;k++){const s=RP(SPN),dP=Math.hypot(s[0]-P.x,s[1]-P.z);if(dP<55||dP>150||!freeSpot(s[0],s[1]))continue;
+function spawnWave(n,kinds,tx,tz,dir,tag){n=Math.min(Math.round(n*coScale()),foeCap()+2-aliveFoes());if(n<=0)return 0;const H=humans();let best=null,bs=-1e9;
+  for(let k=0;k<50;k++){const s=RP(SPN);let dP=H.length?1e9:Math.hypot(s[0]-tx,s[1]-tz);for(const h of H)dP=Math.min(dP,Math.hypot(s[0]-h.x,s[1]-h.z));if(dP<55||dP>150||!freeSpot(s[0],s[1]))continue;
     let sc=-Math.abs(dP-95)*.02+R();if(dir){const dx=s[0]-tx,dz=s[1]-tz,l=Math.hypot(dx,dz)||1;sc+=(dx*dir[0]+dz*dir[1])/l*1.5;}
-    if(los(s[0],1.6,s[1],P.x,P.y+1.6,P.z))sc-=3;if(sc>bs){bs=sc;best=s;}}
+    for(const h of H)if(los(s[0],1.6,s[1],h.x,(h===P?P.y:h.y0)+1.6,h.z)){sc-=3;break;}if(sc>bs){bs=sc;best=s;}}
   if(!best)return 0;
   for(let k=0;k<n;k++){const p=spotNear(best[0],best[1],6,12)||best;waveQ.push({t:k*.35,kind:kinds[Math.floor(R()*kinds.length)],x:p[0],z:p[1],tag});}
   if(G.lkp.age>10){G.lkp.x=tx;G.lkp.z=tz;G.lkp.age=6;}return n;}
@@ -60,8 +60,8 @@ function jammerGeo(){if(jamGeo)return jamGeo;const b=new GB(),ol=0x5b6140,ol2=0x
   return jamGeo=b.build();}
 function makeJammer(){removeJammer(false);const x=44,z=-478.5,g=new T.Mesh(jammerGeo(),vcMat);g.position.set(x,0,z);g.rotation.y=PI/2;g.castShadow=true;
   scene.add(g);const c=solid(x,z,5.9,2.3,2.8);binAdd(c);blockCollider(c);MS.jam={g,c,x,z};}
-function removeJammer(boom){const j=MS.jam;if(!j)return;scene.remove(j.g);j.c.off=true;MS.jam=null;
-  if(boom){explode(j.x,1.2,j.z,9.5,200,true);const w=new T.Mesh(jammerGeo(),char);w.position.set(j.x,-.12,j.z);w.rotation.y=PI/2;w.scale.set(1,.72,1);scene.add(w);fires.push({x:j.x,y:1.2,z:j.z,t:16,n:0});}}
+function removeJammer(boom,rep){const j=MS.jam;if(!j)return;scene.remove(j.g);j.c.off=true;MS.jam=null;
+  if(boom){if(MP.on&&MP.host&&!rep)mpEvent('jam',0,[]);explode(j.x,1.2,j.z,9.5,200,true,rep,0);const w=new T.Mesh(jammerGeo(),char);w.position.set(j.x,-.12,j.z);w.rotation.y=PI/2;w.scale.set(1,.72,1);scene.add(w);fires.push({x:j.x,y:1.2,z:j.z,t:16,n:0});}}
 // extraction helicopter
 const heli={g:null,rot:null,tail:null,on:false,landed:false,x:0,y:0,z:0};
 function makeHeli(){if(heli.g)return;const g=new T.Group(),b=new GB(),ol=0x4b5239,ol2=0x3c4230,gl=0x1c2830,dk=0x24231f;
@@ -91,11 +91,12 @@ function stageStart(i){MS.i=i;const st=ST[i];MS.st=st;MS.prog=0;MS.t=0;MS.stall=
   if(st.heli){makeHeli();heli.on=true;heli.landed=false;heli.g.visible=true;}
   OBJ.text=st.title;OBJ.sub='';OBJ.prog=0;OBJ.x=st.x;OBJ.z=st.z;OBJ.show=true;if(st.intro)radio(st.intro[0],st.intro[1]);}
 function stageDone(){const st=MS.st;MS.done=true;MS.nextT=st.type==='reach'?.1:3.2;G.score+=500;sndUi('obj');if(st.type!=='reach')banner('OBJECTIVE COMPLETE',st.title.toUpperCase());
-  if(st.outro)radio(st.outro[0],st.outro[1]);if(st.type!=='reach'&&st.key!=='exfil'){const p=spotNear(st.x,st.z,7,30);if(p)addPick('crate',p[0],p[1]);}
+  if(st.outro)radio(st.outro[0],st.outro[1]);if(st.type!=='reach'&&st.key!=='exfil'){const p=spotNear(st.x,st.z,7,30);if(p)coCrate(p[0],p[1]);}
   for(const a of allies){if(a.down){a.down=false;a.alive=true;a.up.rotation.z=0;}a.hp=a.maxHp;}}
 function stageUpdate(dt){const st=MS.st;if(!st)return;
   if(MS.done){MS.nextT-=dt;if(MS.nextT<=0){if(MS.i+1<ST.length)stageStart(MS.i+1);else missionWon();}return;}
-  MS.t+=dt;const dP=Math.hypot(P.x-st.x,P.z-st.z),inZone=dP<st.r;OBJ.x=st.x;OBJ.z=st.z;OBJ.y=1.8;
+  MS.t+=dt;const dMe=P.alive?Math.hypot(P.x-st.x,P.z-st.z):1e9;let dP=dMe;for(const m of MP.mates)if(m.alive)dP=Math.min(dP,Math.hypot(m.x-st.x,m.z-st.z)); // the nearest player counts
+  const inZone=dP<st.r;OBJ.x=st.x;OBJ.z=st.z;OBJ.y=1.8;
   if(MS.i===0&&!SAVE.tips&&MS.tip<3&&MS.t>5+MS.tip*12){radio('TIP',TIPS[MS.tip++]);if(MS.tip>=3){SAVE.tips=true;saveGame();}}
   if(st.reinf&&!MS.reinfDone&&aliveFoes(st.key)<=MS.init*(1-st.reinf.at)){MS.reinfDone=true;spawnWave(st.reinf.n,st.reinf.kinds,st.x,st.z,st.reinf.dir,st.key);}
   if(st.type==='capture'){const near=foesNear(st.x,st.z,st.r+8);
@@ -108,11 +109,13 @@ function stageUpdate(dt){const st=MS.st;if(!st)return;
     OBJ.sub=inZone?Math.max(0,Math.ceil(st.time-el))+' s to go':'Get back to the position';if(st.heli)updHeli(dt,MS.prog);if(MS.prog>=1){if(st.heli)heli.landed=true;stageDone();}}
   else if(st.type==='plant'){const j=MS.jam;
     if(MS.phase===''){OBJ.sub=foesNear(st.x,st.z,26)?'Fight through to the truck':'Plant the charge on the truck';
-      if(j&&dP<st.r&&P.alive){G.prompt='Hold <b>'+(isTouch?'USE':'F')+'</b> to plant the charge';if(IN.useHeld){MS.plantT+=dt;OBJ.sub='Planting the charge';MS.prog=MS.plantT/2.2*.3;
+      if(j&&dP<st.r){if(dMe<st.r)G.prompt='Hold <b>'+(isTouch?'USE':'F')+'</b> to plant the charge';let planting=dMe<st.r&&IN.useHeld;
+        if(!planting)for(const m of MP.mates){const pl=MP.players.get(m.pid);if(m.alive&&pl&&pl.use&&Math.hypot(m.x-st.x,m.z-st.z)<st.r){planting=true;break;}}
+        if(planting){MS.plantT+=dt;OBJ.sub='Planting the charge';MS.prog=MS.plantT/2.2*.3;
           if(MS.plantT>=2.2){MS.phase='defend';MS.defT=st.defend;sndUi('pin');radio('COMMAND','Charge is set. '+st.defend+' seconds. Keep them off it and stay clear of the truck.');}}
         else MS.plantT=Math.max(0,MS.plantT-dt);}}
     else{MS.defT-=dt;const el=st.defend-MS.defT;while(MS.waveK<st.waves.length&&el>=st.waves[MS.waveK].t){const w=st.waves[MS.waveK++];spawnWave(w.n,w.kinds,st.x,st.z,w.dir,st.key);}
-      MS.prog=.3+.7*el/st.defend;OBJ.sub='Detonation in '+Math.max(0,Math.ceil(MS.defT))+' s. '+(dP<11?'GET CLEAR OF THE TRUCK':'You are clear');if(dP<11&&MS.defT<8)G.prompt='Move away from the truck';if(MS.defT<=0){removeJammer(true);stageDone();}}}
+      MS.prog=.3+.7*el/st.defend;OBJ.sub='Detonation in '+Math.max(0,Math.ceil(MS.defT))+' s. '+(dP<11?'GET CLEAR OF THE TRUCK':'You are clear');if(dMe<11&&MS.defT<8)G.prompt='Move away from the truck';if(MS.defT<=0){removeJammer(true);stageDone();}}}
   else if(st.type==='eliminate'){const n=aliveFoes(st.key);MS.prog=1-n/MS.init;OBJ.sub='Hostiles remaining: '+n;if(n!==MS.lastN){MS.lastN=n;MS.stall=0;}else MS.stall+=dt;
     // point at the nearest one left once few remain or the hunt has stalled; a marker up in the air means a rooftop or bell tower
     if(n>0&&(n<=3||MS.stall>18)){let b=null,bd=1e9,high=0;for(const s of foes)if(s.alive&&s.tag===st.key){if(s.revealT<1)s.revealT=1;if(s.y0>2)high++;const d=Math.hypot(s.x-P.x,s.z-P.z);if(d<bd){bd=d;b=s;}}
@@ -123,7 +126,7 @@ function stageUpdate(dt){const st=MS.st;if(!st)return;
 function resetWorldState(){clearSoldiers();clearPicks();for(const n of nades)scene.remove(n.m);nades.length=0;waveQ.length=0;hideHeli();G.arcs.length=0;G.lkp.age=99;G.vig=0;G.supp=0;
   P.vx=P.vz=P.vy=0;P.hp=100;P.alive=true;P.stam=1;P.crouching=false;P.crouch=0;P.ads=0;P.wantAds=false;P.reloading=false;P.swapT=0;P.swapTo=-1;P.meleeT=0;P.recoil=0;P.pitch=0;P.punch=0;P.roll=0;P.hurtT=9;
   IN.fire=false;IN.useHeld=false;P.spawnT=0;}
-function placeSquad(){if(MP.on){for(const a of allies)removeSoldier(a);allies.length=0;return;} // the other players are the squad
+function placeSquad(){if(MP.on&&(mpMode().vs||MP.players.size>1)){for(const a of allies)removeSoldier(a);allies.length=0;return;} // the other players are the squad
   const names=['REYES','LUNA'];while(allies.length<2){addSoldier(0,'ally',P.x,P.z,{name:names[allies.length],aware:true});}
   allies.forEach((a,k)=>{const p=spotNear(P.x+Math.sin(P.yaw)*4,P.z+Math.cos(P.yaw)*4,5,30)||[P.x,P.z];a.x=p[0];a.z=p[1];a.hp=a.maxHp;a.alive=true;a.down=false;a.target=null;a.up.rotation.z=0;a.g.position.set(a.x,0,a.z);a.g.visible=true;});}
 function startMission(stage){G.mode='mission';resetWorldState();removeJammer(false);const st=ST[stage],sp=st.spawn;P.x=sp[0];P.z=sp[1];P.y=0;P.yaw=sp[2];
@@ -132,16 +135,17 @@ function startMission(stage){G.mode='mission';resetWorldState();removeJammer(fal
   banner('OPERACIÓN INSURGENTES','CIUDAD INSURGENTES, B.C.S. · FIRETEAM HALCÓN');}
 function restartCheckpoint(){resetWorldState();removeJammer(false);const st=MS.st,sp=st.spawn,L0=MS.loadout;P.x=sp[0];P.z=sp[1];P.y=0;P.yaw=sp[2];
   P.slots=L0.slots.map(w=>({id:w.id,mag:WDEF[w.id].mag,res:Math.max(w.res,Math.round(WDEF[w.id].max*.6))}));P.cur=L0.cur;P.nades=Math.max(3,L0.nades);showWeapon();
-  placeSquad();stageStart(MS.i);}
+  placeSquad();stageStart(MS.i);if(MP.on&&MP.host)mpEvent('ckpt',0,[MS.i]);}
 function startSurvival(){G.mode='survival';resetWorldState();removeJammer(false);MS.st=null;MS.i=-1;P.x=-4;P.z=16;P.y=0;P.yaw=0;giveLoadout();
   G.score=0;G.stats={kills:0,heads:0,shots:0,hits:0,deaths:0,time:0};placeSquad();MS.surv={wave:0,t:4,live:false,left:0};
   OBJ.text='Survive at the Glorieta';OBJ.sub='';OBJ.prog=0;OBJ.x=0;OBJ.z=0;OBJ.show=false;banner('SURVIVAL','HOLD THE GLORIETA AS LONG AS YOU CAN');}
 function survivalUpdate(dt){const S=MS.surv;if(!S)return;
-  if(!S.live){S.t-=dt;OBJ.sub='Next wave in '+Math.max(0,Math.ceil(S.t))+' s';if(S.t<=0){S.wave++;S.live=true;S.left=4+S.wave*2;S.st=0;banner('WAVE '+S.wave,'');
-      if(S.wave>=4&&S.wave%2===0){const r=roofSpot(P.x,P.z,25,60);if(r)spawnMark(r,'sv');}}return;}
+  const H=humans();let cx=0,cz=0;for(const h of H){cx+=h.x/H.length;cz+=h.z/H.length;} // where the players are, or the Glorieta if nobody is standing
+  if(!S.live){S.t-=dt;OBJ.sub='Next wave in '+Math.max(0,Math.ceil(S.t))+' s';if(S.t<=0){S.wave++;S.live=true;S.left=Math.round((4+S.wave*2)*coScale());S.st=0;banner('WAVE '+S.wave,'');
+      if(S.wave>=4&&S.wave%2===0){const r=roofSpot(cx,cz,25,60);if(r)spawnMark(r,'sv');}}return;}
   S.st-=dt;if(S.left>0&&S.st<=0){S.st=3;const kinds=S.wave<2?['rifle']:S.wave<4?['rifle','rifle','rush']:['rifle','rifle','rush','heavy'];
-    S.left-=spawnWave(Math.min(S.left,4),kinds,P.x,P.z,null,'sv');}
+    S.left-=spawnWave(Math.min(S.left,4),kinds,cx,cz,null,'sv');}
   const n=aliveFoes()+waveQ.length;OBJ.text='Survive at the Glorieta · Wave '+S.wave;OBJ.sub='Hostiles: '+(n+Math.max(0,S.left));
-  if(S.left<=0&&n===0){S.live=false;S.t=7;G.score+=250*S.wave;sndUi('obj');banner('WAVE '+S.wave+' CLEAR','+'+250*S.wave);if(S.wave%2===0){const p=spotNear(P.x,P.z,8,30);if(p)addPick('crate',p[0],p[1]);}
+  if(S.left<=0&&n===0){S.live=false;S.t=7;G.score+=250*S.wave;sndUi('obj');banner('WAVE '+S.wave+' CLEAR','+'+250*S.wave);if(S.wave%2===0){const p=spotNear(cx,cz,8,30);if(p)coCrate(p[0],p[1]);}
     for(const a of allies){if(a.down){a.down=false;a.alive=true;a.up.rotation.z=0;}a.hp=a.maxHp;}}}
 function missionUpdate(dt){updWaves(dt);if(G.mode==='mission')stageUpdate(dt);else survivalUpdate(dt);}
