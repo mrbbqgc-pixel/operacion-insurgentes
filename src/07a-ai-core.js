@@ -8,7 +8,7 @@ const WIND=['north','north-east','east','south-east','south','south-west','west'
 function bearingOf(dx,dz){return((Math.atan2(dx,-dz)*180/PI+ROT_DEG)%360+360)%360;}
 const windName=(dx,dz)=>WIND[Math.round(bearingOf(dx,dz)/45)%8];
 // gunfire, explosions and running feet: hostiles in earshot become alert and guess at the source
-function noiseEvent(x,z,rad,fromPlayer){for(let k=0;k<foes.length;k++){const s=foes[k];if(!s.alive)continue;const d=Math.hypot(s.x-x,s.z-z);if(d>rad)continue;
+function noiseEvent(x,z,rad,fromPlayer){lifeNoise(x,z,rad);for(let k=0;k<foes.length;k++){const s=foes[k];if(!s.alive)continue;const d=Math.hypot(s.x-x,s.z-z);if(d>rad)continue;
     if(!s.aware){s.aware=true;s.lowered=false;s.reactT=R2(.5,1.1);}if(fromPlayer&&s.seeT>1){const e=Math.min(10,d*.12);s.lkx=x+R2(-e,e);s.lkz=z+R2(-e,e);}}
   if(fromPlayer&&rad>30){G.lkp.x=x;G.lkp.z=z;G.lkp.age=0;}}
 function alertNear(s,rad){for(let k=0;k<foes.length;k++){const o=foes[k];if(o!==s&&o.alive&&!o.aware&&Math.hypot(o.x-s.x,o.z-s.z)<rad){o.aware=true;o.lowered=false;o.reactT=R2(.8,1.6);o.lkx=s.lkx;o.lkz=s.lkz;}}}

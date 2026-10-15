@@ -71,6 +71,7 @@ function explode(x,y,z,rad,dmg,byPlayer,rep,owner){fxExplosion(x,y,z,rad);sndBoo
   if(P.alive){const k=hit(P.x,P.y+1,P.z);if(k>0&&mpBlast(rep,owner))hurt(dmg*k*.7,x,z);}
   if(rep){noiseEvent(x,z,130);return;} // a copy: its owner's machine deals with soldiers and props
   for(const list of [foes,allies])for(let i=list.length-1;i>=0;i--){const s=list[i];if(!s.alive)continue;const k=hit(s.x,chestY(s),s.z);if(k>0)damageSoldier(s,dmg*k,1,x,z,byPlayer,true);}
+  lifeBlast(x,y,z,rad,dmg,byPlayer); // civilians (07c)
   const st=++stamp,i0=clamp(Math.floor((x-rad-BX0)/BS),0,BW-1),i1=clamp(Math.floor((x+rad-BX0)/BS),0,BW-1),j0=clamp(Math.floor((z-rad-BZ0)/BS),0,BH-1),j1=clamp(Math.floor((z+rad-BZ0)/BS),0,BH-1);
   for(let j=j0;j<=j1;j++)for(let i=i0;i<=i1;i++){const l=bins[j*BW+i];for(let q=0;q<l.length;q++){const c=l[q];if(c.st===st||c.off||!(c.hp>0))continue;c.st=st;
     const d=Math.hypot(clamp(x,c.x0,c.x1)-x,clamp(z,c.z0,c.z1)-z);if(d<rad)damageProp(c,dmg*(1-d/rad)*1.4);}}

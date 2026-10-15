@@ -29,10 +29,13 @@ function fire(){const w=curW(),D=WDEF[w.id];if(P.swapT>0||P.meleeT>0||P.fireT>0)
   camera.updateMatrixWorld();muz.set(0,.02,D.mz);gunRoot.localToWorld(muz);
   let any=false;
   for(let k=0;k<D.pellets;k++){let dx=f[0]+R2(-spread,spread),dy=f[1]+R2(-spread,spread),dz=f[2]+R2(-spread,spread);const l=Math.hypot(dx,dy,dz);dx/=l;dy/=l;dz/=l;
-    const tw=rayWorld(ox,oy,oz,dx,dy,dz,320),wc=RHc,nx=RHnx,ny=RHny,nzz=RHnz,hs=raySoldiers(hostList(),ox,oy,oz,dx,dy,dz,tw),t=hs?RS.t:tw,hx=ox+dx*t,hy=oy+dy*t,hz=oz+dz*t;
+    const tw=rayWorld(ox,oy,oz,dx,dy,dz,320),wc=RHc,nx=RHnx,ny=RHny,nzz=RHnz;let hs=raySoldiers(hostList(),ox,oy,oz,dx,dy,dz,tw),t=hs?RS.t:tw;
+    const cv=lifeRay(ox,oy,oz,dx,dy,dz,t);if(cv){hs=null;t=RS.t;} // a civilian in the line of fire (07c)
+    const hx=ox+dx*t,hy=oy+dy*t,hz=oz+dz*t;
     if(k%3===0){tracer(muz.x,muz.y,muz.z,hx,hy,hz,0xfff0b0);if(MP.on)mpShot(hx,hy,hz);}
     if(hs){const fall=lerp(1,D.rng[2],clamp((t-D.rng[0])/(D.rng[1]-D.rng[0]),0,1));bloodPuff(hx,hy,hz);any=true;
       damageSoldier(hs,D.dmg*fall,RS.zone,P.x,P.z,true,false,D);}
+    else if(cv){bloodPuff(hx,hy,hz);civHurt(cv,D.dmg,P.x,P.z,true,false);}
     else if(tw<320){if(wc&&wc.kind>=2&&wc.kind<=4){spark(hx,hy,hz);damageProp(wc,D.dmg);}else{dust(hx,hy,hz,1);if(!wc||wc.kind<2||wc.kind===5)decal(hx,hy,hz,nx,ny,nzz,R2(.1,.16));}}
     if(k===0)for(let i=0;i<foes.length;i++){const s=foes[i];if(!s.alive)continue;const px=s.x-ox,py=chestY(s)-oy,pz=s.z-oz,along=px*dx+py*dy+pz*dz;
       if(along>0&&along<t+2){const d2=px*px+py*py+pz*pz-along*along;if(d2<3.2)s.supp=1.5;}}}

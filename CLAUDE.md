@@ -19,7 +19,7 @@ It is played mostly on phones (iPhone Safari first), so every change is checked 
   the list in `src/build.sh`, into one function, so they share one scope and order matters.
   `01*` core, materials and the facade atlas; `02a-02c` building, prop and vehicle builders; `02d-02f` landmark builders;
   `02g` street grid; `02h` cemetery and the block-to-landmark table; `02i` street dressing and checkpoints; `03*` baked props, street
-  furniture, collision and navigation; `04` effects and audio; `05` soldiers; `06*` weapons and player; `07*` AI; `08` mission;
+  furniture, collision and navigation; `04` effects and audio; `05` soldiers; `06*` weapons and player; `07a-07b` AI; `07c` town life (civilians, dogs, traffic, birds, ambient sound; single-player only); `08` mission;
   `08b-08g` multiplayer (`08b` rooms and connections, `08c` session, lobby state and event routing, `08d` replication of players,
   hits, grenades and props, `08e` Versus, `08f` the multiplayer panel, score list and results, `08g` co-op);
   `09a` HUD and map; `09b` input, menus and the frame loop.

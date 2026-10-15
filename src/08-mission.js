@@ -123,7 +123,7 @@ function stageUpdate(dt){const st=MS.st;if(!st)return;
     if(n===0)stageDone();}
   else if(st.type==='reach'){OBJ.sub='';updHeli(dt,1);if(inZone)stageDone();}
   OBJ.prog=clamp(MS.prog,0,1);}
-function resetWorldState(){clearSoldiers();clearPicks();for(const n of nades)scene.remove(n.m);nades.length=0;waveQ.length=0;hideHeli();G.arcs.length=0;G.lkp.age=99;G.vig=0;G.supp=0;
+function resetWorldState(){lifeReset();clearSoldiers();clearPicks();for(const n of nades)scene.remove(n.m);nades.length=0;waveQ.length=0;hideHeli();G.arcs.length=0;G.lkp.age=99;G.vig=0;G.supp=0;
   P.vx=P.vz=P.vy=0;P.hp=100;P.alive=true;P.stam=1;P.crouching=false;P.crouch=0;P.ads=0;P.wantAds=false;P.reloading=false;P.swapT=0;P.swapTo=-1;P.meleeT=0;P.recoil=0;P.pitch=0;P.punch=0;P.roll=0;P.hurtT=9;
   IN.fire=false;IN.useHeld=false;P.spawnT=0;}
 function placeSquad(){if(MP.on&&(mpMode().vs||MP.players.size>1)){for(const a of allies)removeSoldier(a);allies.length=0;return;} // the other players are the squad
