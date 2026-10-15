@@ -71,8 +71,7 @@ function updAlly(s,dt,idx){
     if(d>2.2){s.wantCrouch=false;moveToward(s,gx,gz,d>14?7.4:d>6?5.2:3.2,(d>9&&FA.n>0)?FA:null);face(s,s.x+s.mx*3,s.z+s.mz*3,dt,6);}
     else{s.wantCrouch=P.crouch>.5;s.yaw+=clamp(angDiff(P.yaw+side*.5,s.yaw),-dt*2,dt*2);s.g.rotation.y=s.yaw;}}
   s.crouch+=clamp((s.wantCrouch?1:0)-s.crouch,-dt*4.5,dt*4.5);stepSoldier(s,dt);animSoldier(s,dt);}
-function updCorpse(s,dt){s.deadT+=dt;const k=Math.min(1,s.deadT/.42),e=k*k*(3-2*k);s.g.rotation.x=s.fall*e*1.5;s.g.position.y=s.y0+e*.13;
-  s.aL.rotation.set(.4,0,-e*1.1);s.aR.rotation.set(.3,0,e*.9);s.fL.rotation.x=.2;s.fR.rotation.x=.3;s.lL.rotation.x=e*.3;s.kR.rotation.x=-e*.7;s.up.rotation.x=0;return s.deadT<1.2;}
+function updCorpse(s,dt){s.deadT+=dt;animDeath(s);return s.deadT<1.2;} // the fall itself is in 05-soldiers
 function clearSoldiers(){for(const s of foes){removeSoldier(s);if(s.laser)scene.remove(s.laser);}foes.length=0;for(const s of corpses)removeSoldier(s);corpses.length=0;coverTaken.clear();}
 function updAI(dt){G.budget=2;G.lkp.age+=dt;if(G.nadeCD>0)G.nadeCD-=dt;if(G.calloutT>0)G.calloutT-=dt;if(G.supp>0)G.supp=Math.max(0,G.supp-dt*.5);
   let hunters=0;for(let k=0;k<foes.length;k++){const s=foes[k];if(s.alive&&s.aware&&!s.isStatic)hunters++;}

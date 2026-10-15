@@ -14,7 +14,7 @@ function curSpread(D){const mv=clamp(P.speed/5.2,0,1.5);
   return(lerp(D.hip,D.ads,P.ads)*(P.crouch>.5?.72:1))+D.hip*1.2*mv*(1-P.ads*.65)+(P.ground?0:.05)+P.bloom*(1-P.ads*.55);}
 function cancelReload(){P.reloading=false;P.reloadT=0;}
 function startReload(){const w=curW(),D=WDEF[w.id];if(P.reloading||w.mag>=D.mag||w.res<=0||P.swapT>0||P.meleeT>0)return;
-  P.reloading=true;P.reloadT=D.shell?D.reload:(w.mag===0?D.reload*1.12:D.reload);sndUi('mag');}
+  P.reloading=true;P.reloadT=D.shell?D.reload:(w.mag===0?D.reload*1.12:D.reload);P.rlTot=P.reloadT;sndUi('mag');}
 function finishReload(){const w=curW(),D=WDEF[w.id];
   if(D.shell){w.mag++;w.res--;sndUi('click');if(w.mag<D.mag&&w.res>0){P.reloadT=D.reload;return;}}
   else{const n=Math.min(D.mag-w.mag,w.res);w.mag+=n;w.res-=n;sndUi('mag');}
@@ -38,7 +38,8 @@ function fire(){const w=curW(),D=WDEF[w.id];if(P.swapT>0||P.meleeT>0||P.fireT>0)
       if(along>0&&along<t+2){const d2=px*px+py*py+pz*pz-along*along;if(d2<3.2)s.supp=1.5;}}}
   if(any)G.stats.hits++;
   const kk=D.kick*(1-P.ads*.3)*(P.crouch>.5?.8:1);P.pitch=Math.min(1.5,P.pitch+kk);P.recoil+=kk*.62;P.yaw+=(R()-.5)*2*D.kickH*(1-P.ads*.3);
-  P.bloom=Math.min(.05,P.bloom+D.hip*.2);P.kick=Math.min(1,P.kick+.45+D.kick*9);P.flashT=.05;flash.material.rotation=R()*TAU;lightAt(muz.x,muz.y,muz.z,1.5,.06);
+  P.bloom=Math.min(.05,P.bloom+D.hip*.2);P.kick=Math.min(1,P.kick+.45+D.kick*9);P.flashT=.05;flash.material.rotation=R()*TAU;flash.scale.setScalar(R2(.3,.5)*(D.shell?1.4:1));lightAt(muz.x,muz.y,muz.z,1.5,.06);
+  P.burstN=(P.burstN||0)+1;if(R()<.35||D.shell)puff(muz.x,muz.y,muz.z,0xc9c2b6,.06,.22,.45,.3,R2(-.2,.2)+P.vx*.3,R2(.5,.9),R2(-.2,.2)+P.vz*.3,false,true); // a little smoke with some shots
   sndShot(D.snd,0,0,true);
   if(!D.shell){const rx=Math.cos(P.yaw),rz=-Math.sin(P.yaw);bit(ox+f[0]*.35+rx*.16,oy-.1,oz+f[2]*.35+rz*.16,rx*R2(1.5,2.6)+P.vx,R2(1.5,2.6),rz*R2(1.5,2.6)+P.vz,.02,.02,.055,brass,2.4);}
   noiseEvent(P.x,P.z,90,true);if(w.mag===0&&w.res>0&&!D.shell)P.autoRl=.3;}
@@ -108,7 +109,9 @@ function updPlayer(dt){const w=curW(),D=WDEF[w.id];
   IN.firePressed=false;if(want)fire();
   if(P.recoil>0){const r=Math.min(P.recoil,dt*.42);P.pitch-=r;P.recoil-=r;}
   P.bloom=Math.max(0,P.bloom-dt*.09);P.kick*=Math.exp(-dt*13);P.punch*=Math.exp(-dt*7);P.roll*=Math.exp(-dt*6);
-  if(P.flashT>0){P.flashT-=dt;}flash.visible=P.flashT>0&&!(D2.scope&&P.ads>.9);}
+  if(P.flashT>0){P.flashT-=dt;}flash.visible=P.flashT>0&&!(D2.scope&&P.ads>.9);
+  if(P.burstN>0&&P.fireT<-.25){camera.updateMatrixWorld();muz.set(0,.02,D2.mz);gunRoot.localToWorld(muz); // the barrel smokes for a moment after a burst
+    for(let k=0,n=Math.min(3,P.burstN);k<n;k++)puff(muz.x,muz.y,muz.z,0xbdb6aa,.05,.3+k*.1,.9+k*.3,.28,R2(-.15,.15),R2(.35,.6),R2(-.15,.15),false,true);P.burstN=0;}}
 function updCamera(dt){const D=curD(),eye=lerp(1.65,1.05,P.crouch),amp=(P.sprinting?.055:.03)*(1-P.ads*.75)*clamp(P.speed/4,0,1);
   camera.position.set(P.x+(shake?R2(-1,1)*shake*.07:0),P.y+eye+Math.sin(P.bob)*amp+(shake?R2(-1,1)*shake*.07:0),P.z+(shake?R2(-1,1)*shake*.07:0));
   camera.rotation.set(P.pitch+P.punch,P.yaw,P.roll+Math.sin(P.bob*.5)*amp*.25);
@@ -118,6 +121,17 @@ function updCamera(dt){const D=curD(),eye=lerp(1.65,1.05,P.crouch),amp=(P.sprint
   const rl=P.reloading?Math.sin(clamp(1-P.reloadT/(D.shell?D.reload:D.reload*1.05),0,1)*PI):0,sw=P.swapT>0?Math.sin(clamp(P.swapT/.42,0,1)*PI):0,
     spr=P.sprinting?1:0,ml=P.meleeT>0?Math.sin(clamp(P.meleeT/.5,0,1)*PI):0;
   gunRoot.userData.spr=lerp(gunRoot.userData.spr||0,spr,Math.min(1,dt*9));const sp=gunRoot.userData.spr,bobx=Math.cos(P.bob*.5)*amp*.5,boby=Math.sin(P.bob)*amp*.4;
-  gunRoot.position.set(lerp(.2,0,e)+bobx*(1-e)+sp*.06-ml*.1,lerp(-.19,-D.sight*.8-.016,e)+boby*(1-e)-rl*.16-sw*.22-sp*.05,lerp(-.42,-.4,e)+P.kick*.07*(1-e*.5)-ml*.22);
-  gunRoot.rotation.set(P.kick*.09*(1-e*.6)-rl*.85-sw*.9-sp*.25+ml*.5,sp*.55+ml*.7,rl*.35);
-  gunRoot.visible=!(D.scope&&P.ads>.9);}
+  gunRoot.position.set(lerp(.17,0,e)+bobx*(1-e)+sp*.06-ml*.1-rl*.08,lerp(-.145,-D.sight*.8-.003,e)+boby*(1-e)+rl*.1-sw*.22-sp*.05,lerp(-.46,-.4,e)+P.kick*.07*(1-e*.5)-ml*.22);
+  gunRoot.rotation.set(P.kick*.09*(1-e*.6)+rl*.3-sw*.9-sp*.25+ml*.5,sp*.55+ml*.7+rl*.3,-rl*.55);
+  gunRoot.visible=!(D.scope&&P.ads>.9);animHands();}
+// the support hand and the magazine during a reload (keyframed over the reload time), the shotgun's pump after a shot
+function kf(t,K){for(let i=1;i<K.length;i++)if(t<=K[i][0]){const a=K[i-1],b=K[i],u=ease((t-a[0])/(b[0]-a[0]));return[lerp(a[1][0],b[1][0],u),lerp(a[1][1],b[1][1],u),lerp(a[1][2],b[1][2],u)];}return K[K.length-1][1];}
+function animHands(){const w=curW(),D=WDEF[w.id],g=VM[w.id];if(!g)return;const u=g.userData,o=u.o,hl=u.hl,mg=u.mag,H=o.hl,Gp=o.grab;
+  let t=P.reloading?clamp(1-P.reloadT/(D.shell?D.reload:P.rlTot||D.reload),0,1):-1,hx=H[0],hy=H[1],hz=H[2],rx=H[3]||0,mx=0,my=0,mz=0;
+  if(o.rl==='shell'){const p=clamp(1-Math.max(0,P.fireT)/D.rate,0,1),pump=Math.sin(clamp(p/.5,0,1)*PI)*.075;mz=pump;hz+=pump;    // the pump cycles after every shot
+    if(t>=0){const k=Math.sin(t*PI);hx=lerp(H[0],Gp[0]+.02,k);hy=lerp(H[1],Gp[1]-.03,k);hz=lerp(H[2]+pump,Gp[2],k);rx=lerp(rx,-.6,k);}}
+  else if(t>=0){const gx=Gp[0],gy=Gp[1]-.02,gz=Gp[2],pst=o.rl==='pistol',K=pst?[[0,[H[0],H[1],H[2]]],[.15,[gx-.04,gy-.02,gz+.04]],[.35,[gx-.12,gy-.38,gz+.12]],[.6,[gx-.12,gy-.38,gz+.12]],[.82,[gx-.04,gy-.02,gz+.04]],[1,[H[0],H[1],H[2]]]]
+      :[[0,[H[0],H[1],H[2]]],[.18,[gx,gy,gz]],[.4,[gx+.03,gy-.22,gz+.08]],[.5,[gx+.06,gy-.42,gz+.14]],[.62,[gx+.06,gy-.42,gz+.14]],[.8,[gx,gy,gz]],[1,[H[0],H[1],H[2]]]],
+      p=kf(t,K);hx=p[0];hy=p[1];hz=p[2];rx=lerp(H[3]||0,pst?-.3:-.45,Math.sin(t*PI));
+    if(pst){if(t>.1&&t<.85){my=Math.min(0,p[1]-gy);}}else if(t>.18&&t<.8){mx=p[0]-gx;my=p[1]-gy;mz=p[2]-gz;}}          // the magazine travels with the hand
+  hl.position.set(hx,hy,hz);hl.rotation.x=rx;mg.position.set(mx,my,mz);}
