@@ -14,6 +14,10 @@ body{background:var(--ink);color:var(--bone);font-family:var(--ui);font-size:16p
   touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 button{font-family:var(--ui);color:var(--bone)}
 #view{position:fixed;inset:0;width:100%;height:100%;display:block;background:var(--sand)}
+/* screen grade over the 3D view: a soft vignette with a faint warm centre, and a veil of lens haze that fades in when the sun is in view */
+#grade,#glare{position:fixed;inset:0;pointer-events:none}
+#grade{background:radial-gradient(ellipse 72% 68% at 50% 46%,rgba(255,214,160,.07) 0%,rgba(255,214,160,0) 50%,rgba(12,20,38,.14) 80%,rgba(8,14,30,.36) 100%)}
+#glare{opacity:0;background:radial-gradient(ellipse 80% 70% at 50% 40%,rgba(255,226,186,.5) 0%,rgba(255,214,160,.22) 45%,rgba(255,200,140,0) 80%)}
 #hud{position:fixed;inset:0;pointer-events:none;font-variant-numeric:tabular-nums;
   --sl:env(safe-area-inset-left,0px);--sr:env(safe-area-inset-right,0px);--st:env(safe-area-inset-top,0px);--sb:env(safe-area-inset-bottom,0px)}
 #hud b{font-weight:700}
@@ -161,7 +165,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 @media (max-width:560px){#kills{top:36%}#leftCol{width:min(210px,50vw)}#compass{width:30vw}#area{display:none}}
 @media (max-height:440px){#mini{width:92px;height:92px}#objText{font-size:14px}#feed p{font-size:13px}}
 </style>
-<canvas id="view"></canvas>
+<canvas id="view"></canvas><div id="grade"></div><div id="glare"></div>
 <div id="hud" hidden>
   <div id="leftCol"><div id="objPanel"><span class="lbl">Objective</span><div id="objText"></div><div id="objBar"><i id="objFill"></i></div><div id="squad"></div><div id="mpBoard" hidden></div></div><div id="feed"></div></div>
   <div id="topc"><canvas id="compass" width="680" height="52"></canvas><div id="area"></div></div>

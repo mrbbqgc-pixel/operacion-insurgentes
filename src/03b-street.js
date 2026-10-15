@@ -30,18 +30,42 @@
  for(const p of pumps){const m=new T.Mesh(pumpGeo,vcMat);m.position.set(p[0],PADY+.18,p[1]);m.rotation.y=p[2]?PI/2:0;m.castShadow=true;addProp(m);
    const c=solid(p[0],p[1],p[2]?.5:.7,p[2]?.7:.5,2.1,0,4);c.hp=90;c.ref=m;}}
 // Sierra de la Giganta: layered ridges on the eastern horizon (real bearings 20 to 140 degrees). They ride with the camera like the sky.
+// Each ridge fades from the haze colour at its foot to a cool blue-grey at the crest; the nearer the layer, the deeper the colour.
 const sierra=new T.Group();scene.add(sierra);
-for(const lay of [[1700,0xbcaebb,40,110,1],[1560,0xa99bae,45,150,2],[1420,0x9c8c9e,20,80,3]]){const p=[],ix=[];let h=lay[3]*.6,n=0;
+const sierraCol=k=>mixc(HAZE,0x76738f,k);
+for(const lay of [[1700,sierraCol(.4),40,110,1],[1560,sierraCol(.55),45,150,2],[1420,sierraCol(.7),20,80,3]]){const p=[],cc=[],ix=[];let h=lay[3]*.6,n=0;
+  const foot=mixc(HAZE,lay[1],.2),fr=LIN[foot>>16&255],fg=LIN[foot>>8&255],fb=LIN[foot&255],cr=LIN[lay[1]>>16&255],cg=LIN[lay[1]>>8&255],cb=LIN[lay[1]&255];
   for(let b=14;b<=146;b+=1.5,n++){const f=(b-ROT_DEG)*PI/180,x=lay[0]*Math.sin(f),z=-lay[0]*Math.cos(f),edge=clamp(Math.min(b-14,146-b)/26,0,1);
-    h=clamp(h+rr(-16,16),lay[2],lay[3]);p.push(x,-12,z,x,h*edge+2,z);if(b<146){const a=n*2;ix.push(a,a+1,a+2,a+1,a+3,a+2);}}
-  const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(p,3));g.setIndex(ix);
-  const m=new T.Mesh(g,new T.MeshBasicMaterial({color:lay[1],fog:false,side:T.DoubleSide,depthWrite:false}));m.renderOrder=-9+lay[4];m.frustumCulled=false;sierra.add(m);}
-const sky=new T.Mesh(new T.SphereGeometry(2400,32,16),new T.MeshBasicMaterial({side:T.BackSide,fog:false,depthWrite:false,
-  map:tex(1024,512,(g,w,h)=>{const gr=g.createLinearGradient(0,0,0,h);gr.addColorStop(0,'#2a66ad');gr.addColorStop(.3,'#6fa4d2');gr.addColorStop(.44,'#c9d3d2');gr.addColorStop(.485,'#e6cfa8');
-    gr.addColorStop(.5,'#e3c7a0');gr.addColorStop(1,'#e3c7a0');g.fillStyle=gr;g.fillRect(0,0,w,h);
-    for(let k=0;k<26;k++){const cx=rnd()*w,cy=h*rr(.25,.43),rx=rr(40,130),ry=rr(5,13);for(let q=0;q<7;q++){const x=cx+rr(-rx,rx),y=cy+rr(-ry,ry),r=rr(18,46);
-      for(const ox of [-w,0,w]){const cg=g.createRadialGradient(x+ox,y,1,x+ox,y,r);cg.addColorStop(0,'rgba(255,250,240,.2)');cg.addColorStop(1,'rgba(255,250,240,0)');g.fillStyle=cg;g.fillRect(x+ox-r,y-r,2*r,2*r);}}}})}));
+    h=clamp(h+rr(-16,16),lay[2],lay[3]);const t=clamp((h*edge+2)/lay[3],0,1)*.75;p.push(x,-12,z,x,h*edge+2,z);cc.push(fr,fg,fb,lerp(fr,cr,t),lerp(fg,cg,t),lerp(fb,cb,t));
+    if(b<146){const a=n*2;ix.push(a,a+1,a+2,a+1,a+3,a+2);}}
+  const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(p,3));g.setAttribute('color',new T.Float32BufferAttribute(cc,3));g.setIndex(ix);
+  const m=new T.Mesh(g,new T.MeshBasicMaterial({vertexColors:true,fog:false,toneMapped:false,side:T.DoubleSide,depthWrite:false}));m.renderOrder=-9+lay[4];m.frustumCulled=false;sierra.add(m);}
+// Sky: an equirectangular dome painted once. Deep blue at the zenith, a haze band at the horizon in the fog colour, brighter and
+// warmer around the sun and cooler away from it, thin cirrus streaks high up, a dusty fade below the horizon. Neither fogged nor
+// tone mapped, so the painted horizon stays exactly the fog colour and distant blocks melt into it.
+const SUNU=((Math.atan2(SUN.z,-SUN.x)/TAU)%1+1)%1; // texture column of the sun (sphere u runs with -cos, sin)
+function rgba(h,a){return 'rgba('+(h>>16&255)+','+(h>>8&255)+','+(h&255)+','+a+')';}
+const sky=new T.Mesh(new T.SphereGeometry(2400,32,16),new T.MeshBasicMaterial({side:T.BackSide,fog:false,depthWrite:false,toneMapped:false,
+  map:tex(1024,512,(g,w,h)=>{const hz=h/2,sx=SUNU*w,sy=hz-Math.asin(SUN.y)/PI*h;
+    const gr=g.createLinearGradient(0,0,0,h);gr.addColorStop(0,'#2b63b0');gr.addColorStop(.2,'#4f8ac6');gr.addColorStop(.34,'#8db2d4');gr.addColorStop(.45,'#c8ccc6');gr.addColorStop(.5,css(HAZE));
+    gr.addColorStop(.525,css(mixc(HAZE,0x9a8468,.5)));gr.addColorStop(.62,'#8c7a62');gr.addColorStop(1,'#5d5044');g.fillStyle=gr;g.fillRect(0,0,w,h);
+    // an ellipse of colour, stretched kx times horizontally, repeated across the seam
+    const ell=(x,y,r,kx,col,a,a2)=>{for(const ox of [-w,0,w]){g.save();g.translate(x+ox,y);g.scale(kx,1);const c=g.createRadialGradient(0,0,0,0,0,r);c.addColorStop(0,rgba(col,a));c.addColorStop(.45,rgba(col,a2===undefined?a*.45:a2));c.addColorStop(1,rgba(col,0));g.fillStyle=c;g.fillRect(-r,-r,2*r,2*r);g.restore();}};
+    ell(sx+w/2,hz-150,170,2.6,0x3f6aa8,.3);          // deeper, cooler sky opposite the sun
+    ell(sx,hz-24,150,3.2,0xffd9a8,.42);              // warm haze low around the sun
+    ell(sx,sy,120,1.5,0xffe6c2,.5);                  // the sun's own glow
+    ell(sx,sy,34,1.2,0xfff3dc,.9);
+    // cirrus: long thin streaks, slightly curved, high in the sky
+    for(let k=0;k<22;k++){const cx=rnd()*w,cy=h*rr(.17,.4),len=rr(50,210),th=rr(2.5,7),cur=rr(-.25,.25),a=rr(.06,.15);
+      for(let q=0;q<=len;q+=4){const t=q/len-.5,x=cx+q-len/2,y=cy+cur*len*t*t*2,r=th*(1.4-Math.abs(t)*1.6)+2;ell(x,y,r,2.2,0xfff8ee,a*(1-Math.abs(t)*1.2),a*.6*(1-Math.abs(t)*1.2));}}
+    // the horizon line itself stays the fog colour under the glows
+    const hb=g.createLinearGradient(0,hz-18,0,hz+4);hb.addColorStop(0,rgba(HAZE,0));hb.addColorStop(.75,rgba(HAZE,.9));hb.addColorStop(1,rgba(HAZE,1));g.fillStyle=hb;g.fillRect(0,hz-18,w,22);
+    const hb2=g.createLinearGradient(0,hz+4,0,hz+16);hb2.addColorStop(0,rgba(HAZE,1));hb2.addColorStop(1,rgba(HAZE,0));g.fillStyle=hb2;g.fillRect(0,hz+4,w,12);})}));
 sky.renderOrder=-10;scene.add(sky);
-const glow=tex(128,128,(g,w,h)=>{const gr=g.createRadialGradient(64,64,2,64,64,64);gr.addColorStop(0,'rgba(255,255,255,1)');gr.addColorStop(.12,'rgba(255,244,214,.95)');
-  gr.addColorStop(.4,'rgba(255,220,160,.25)');gr.addColorStop(1,'rgba(255,220,160,0)');g.fillStyle=gr;g.fillRect(0,0,w,h);});
-const sunSprite=new T.Sprite(new T.SpriteMaterial({map:glow,fog:false,depthWrite:false,transparent:true}));sunSprite.scale.set(520,520,1);scene.add(sunSprite);
+// the sun: a hard core, a warm glow and a faint wide haze in one sprite; it blooms a little when looked at (sunLook, per frame)
+const glow=tex(256,256,(g,w,h)=>{const gr=g.createRadialGradient(128,128,2,128,128,128);gr.addColorStop(0,'rgba(255,255,255,1)');gr.addColorStop(.07,'rgba(255,248,230,1)');gr.addColorStop(.11,'rgba(255,236,196,.75)');
+  gr.addColorStop(.24,'rgba(255,220,160,.3)');gr.addColorStop(.5,'rgba(255,210,150,.11)');gr.addColorStop(1,'rgba(255,205,150,0)');g.fillStyle=gr;g.fillRect(0,0,w,h);});
+const sunSprite=new T.Sprite(new T.SpriteMaterial({map:glow,fog:false,depthWrite:false,transparent:true,toneMapped:false}));sunSprite.scale.set(1000,1000,1);scene.add(sunSprite);
+const _cd=new T.Vector3();let glareK=-1;
+function sunLook(){camera.getWorldDirection(_cd);const f=clamp((_cd.dot(SUN)-.5)/.45,0,1),k=1+.4*f;sunSprite.scale.set(1000*k,1000*k,1);sunSprite.material.opacity=.8+.2*f;
+  if(Math.abs(f-glareK)>.02){glareK=f;const e=$('glare');if(e)e.style.opacity=(f*.6).toFixed(2);}}

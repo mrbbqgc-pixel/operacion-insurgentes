@@ -5,9 +5,9 @@ cell('corr',g=>{g.fillStyle='#d7dbdc';g.fillRect(0,0,256,256);for(let x=0;x<256;
   noise(g,256,256,500,.06);for(let k=0;k<9;k++){const x=rnd()*256,gr=g.createLinearGradient(0,0,0,rr(60,200));gr.addColorStop(0,'rgba(140,80,35,.3)');gr.addColorStop(1,'rgba(140,80,35,0)');g.fillStyle=gr;g.fillRect(x,0,rr(4,14),200);}
   g.fillStyle='rgba(0,0,0,.2)';g.fillRect(0,126,256,3);});
 cell('stone',g=>{g.fillStyle='#d8d0c0';g.fillRect(0,0,256,256);noise(g,256,256,1300,.08);g.strokeStyle='rgba(70,60,45,.35)';g.lineWidth=1.5;
-  for(let r=0;r<8;r++){const y=r*32;g.beginPath();g.moveTo(0,y);g.lineTo(256,y);g.stroke();for(let x=(r%2)*32+rr(-4,4);x<256;x+=64){g.beginPath();g.moveTo(x,y);g.lineTo(x,y+32);g.stroke();}}});
+  for(let r=0;r<8;r++){const y=r*32;g.beginPath();g.moveTo(0,y);g.lineTo(256,y);g.stroke();for(let x=(r%2)*32+rr(-4,4);x<256;x+=64){g.beginPath();g.moveTo(x,y);g.lineTo(x,y+32);g.stroke();}}foot(g);});
 cell('brick',g=>{g.fillStyle='#c98f6f';g.fillRect(0,0,256,256);for(let r=0;r<32;r++)for(let x=(r%2)*16-16;x<256;x+=32){g.fillStyle='rgba('+(rnd()<.5?'60,25,10':'255,220,190')+','+rr(.03,.16).toFixed(2)+')';g.fillRect(x+1,r*8+1,30,6);}
-  g.strokeStyle='rgba(235,225,210,.5)';g.lineWidth=1;for(let r=0;r<=32;r++){g.beginPath();g.moveTo(0,r*8);g.lineTo(256,r*8);g.stroke();}noise(g,256,256,500,.06);});
+  g.strokeStyle='rgba(235,225,210,.5)';g.lineWidth=1;for(let r=0;r<=32;r++){g.beginPath();g.moveTo(0,r*8);g.lineTo(256,r*8);g.stroke();}noise(g,256,256,500,.06);foot(g);});
 function arch(g,x,w,h,rise,fill){const y=256-h;g.beginPath();g.moveTo(x,256);g.lineTo(x,y+rise);g.quadraticCurveTo(x,y,x+w/2,y);g.quadraticCurveTo(x+w,y,x+w,y+rise);g.lineTo(x+w,256);g.closePath();fill();}
 cell('archDoor',g=>{stucco(g);arch(g,58,140,214,70,()=>{g.fillStyle='#d2c9b6';g.fill();});arch(g,70,116,202,62,()=>{g.fillStyle='#5a3c22';g.fill();});
   g.strokeStyle='rgba(20,10,4,.6)';g.lineWidth=2;g.beginPath();g.moveTo(128,56);g.lineTo(128,256);g.stroke();for(const p of [[80,120,40,56],[136,120,40,56],[80,186,40,60],[136,186,40,60]])g.strokeRect(p[0],p[1],p[2],p[3]);
@@ -37,7 +37,7 @@ for(let c=0;c<5;c++)cell('signs'+c,g=>{for(let j=0;j<4;j++){const s=shopSigns[c*
     g.fillStyle=inv?'#f6f1e4':s[1];g.font='900 40px "Arial Narrow",Arial,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(s[0],128,j*64+34,226);}noise(g,256,256,300,.05);keep(g,0,0,256,256);});
 function signUV(k){const c=cuv(signCell0+(k>>2)),j=k&3,vh=(c[3]-c[1])/4;return[c[0],c[3]-(j+1)*vh+.0004,c[2],c[3]-j*vh-.0004];}
 ag.fillStyle='#fff';ag.fillRect(0,AS-24,24,24); // white texel for plain vertex-coloured geometry (see WU, WV)
-const ATLAS=new T.CanvasTexture(atlasC);ATLAS.anisotropy=MAXA;
+const ATLAS=srgbTex(new T.CanvasTexture(atlasC));ATLAS.anisotropy=MAXA;
 const CI=CELL_IX;
 
 // ---------- materials
@@ -71,7 +71,7 @@ for(const k of ['walk','asphalt']){const m=M[k].clone();m.polygonOffsetFactor=m.
 for(const k of ['court','infield'])M[k].polygonOffsetFactor=M[k].polygonOffsetUnits=-2;
 // chunked, vertex-coloured materials
 M.wall=L({map:ATLAS,vertexColors:true});
-M.wall.onBeforeCompile=s=>{s.fragmentShader=s.fragmentShader.replace('#include <map_fragment>','vec4 texelColor=texture2D(map,vUv);float tintK=clamp(texelColor.a*2.0-1.0,0.0,1.0);diffuseColor.rgb*=texelColor.rgb;')
+M.wall.onBeforeCompile=s=>{s.fragmentShader=s.fragmentShader.replace('#include <map_fragment>','vec4 texelColor=mapTexelToLinear(texture2D(map,vUv));float tintK=clamp(texelColor.a*2.0-1.0,0.0,1.0);diffuseColor.rgb*=texelColor.rgb;')
   .replace('#include <color_fragment>','diffuseColor.rgb*=mix(vec3(1.0),vColor,tintK);');};
 M.flat=L({vertexColors:true});M.flat.userData.alias=M.wall;
 M.paint=new T.MeshPhongMaterial({vertexColors:true,shininess:55,specular:0x4a4a4a});

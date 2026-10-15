@@ -5,7 +5,7 @@
 function GB(){this.p=[];this.n=[];this.c=[];this.u=[];this.i=[];}
 GB.prototype.add=function(geo,x,y,z,rx,ry,rz,sx,sy,sz,col,fn){_e.set(rx||0,ry||0,rz||0,'YXZ');_q.setFromEuler(_e);_p.set(x,y,z);_s.set(sx,sy===undefined?sx:sy,sz===undefined?sx:sz);_m4.compose(_p,_q,_s);_n3.getNormalMatrix(_m4);
   const P=geo.attributes.position,N=geo.attributes.normal,U=geo.attributes.uv,ix=geo.index,k=this.p.length/3,r=(col>>16&255)/255,g=(col>>8&255)/255,b=(col&255)/255;
-  for(let i=0;i<P.count;i++){_v.fromBufferAttribute(P,i).applyMatrix4(_m4);this.p.push(_v.x,_v.y,_v.z);const f=fn?fn(_v.x,_v.y,_v.z):1;this.c.push(r*f,g*f,b*f);
+  for(let i=0;i<P.count;i++){_v.fromBufferAttribute(P,i).applyMatrix4(_m4);this.p.push(_v.x,_v.y,_v.z);const f=fn?fn(_v.x,_v.y,_v.z):1;this.c.push(linf(r*f),linf(g*f),linf(b*f));
     _v.fromBufferAttribute(N,i).applyMatrix3(_n3).normalize();this.n.push(_v.x,_v.y,_v.z);if(U)this.u.push(U.getX(i),U.getY(i));else this.u.push(0,0);}
   if(ix)for(let i=0;i<ix.count;i++)this.i.push(k+ix.getX(i));else for(let i=0;i<P.count;i++)this.i.push(k+i);return this;};
 GB.prototype.build=function(){const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(this.p,3));g.setAttribute('normal',new T.Float32BufferAttribute(this.n,3));

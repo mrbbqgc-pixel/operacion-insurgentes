@@ -22,23 +22,37 @@ if(isTouch)document.body.classList.add('touch');
 const Q={shadows:!isTouch,pr:Math.min(window.devicePixelRatio||1,isTouch?1.5:2),maxFoes:isTouch?10:14,far:isTouch?430:560};
 renderer.setPixelRatio(Q.pr);
 if(Q.shadows){renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;}
+// Lighting is computed in linear space and filmic tone mapped: every colour the code gives as an sRGB hex is converted when it
+// is set (Color.setHex below, LIN for vertex colours), canvas textures are stored as sRGB (srgbTex), and the renderer encodes its output.
+// Fog is mixed after that encoding in three r128, so the fog colour is the one value kept raw (see fogColor).
+renderer.outputEncoding=T.sRGBEncoding;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=.8;
+const _setHex=T.Color.prototype.setHex;T.Color.prototype.setHex=function(h){_setHex.call(this,h);return this.convertSRGBToLinear();};
+const LIN=new Float32Array(256);for(let i=0;i<256;i++){const c=i/255;LIN[i]=c<.04045?c/12.92:Math.pow((c+.055)/1.055,2.4);}
+const linf=v=>LIN[v<=0?0:v>=1?255:Math.round(v*255)];
 const scene=new T.Scene();
-scene.fog=new T.Fog(0xe3c7a0,Q.far*.2,Q.far);
+// warm dusty haze; the sky dome paints the same colour on its horizon line so distant blocks melt into it
+const HAZE=0xe8d1ad;
+scene.fog=new T.Fog(0,Q.far*.2,Q.far);
+function fogColor(h){scene.fog.color.setRGB((h>>16&255)/255,(h>>8&255)/255,(h&255)/255);}fogColor(HAZE);
 const camera=new T.PerspectiveCamera(74,1,0.08,2600);
 camera.rotation.order='YXZ';
 scene.add(camera);
-const hemi=new T.HemisphereLight(0xfff6e6,0xc7a67c,0.72);scene.add(hemi);
-// late-afternoon sun from the west-southwest (in the town's rotated frame that is mostly -x)
-const SUN=new T.Vector3(-0.74,0.62,0.26).normalize();
-const sun=new T.DirectionalLight(0xffe9c4,0.56);scene.add(sun);scene.add(sun.target);
+// sky light is a cool blue, bounce from the ground warm sand: shade falls blue-grey, sunlit faces warm
+const hemi=new T.HemisphereLight(0x8fb4e6,0x857360,0.74);scene.add(hemi);
+// late-afternoon sun from the west-southwest (in the town's rotated frame that is mostly -x), 30 degrees up
+const SUN=new T.Vector3(-0.78,0.5,0.27).normalize();
+const sun=new T.DirectionalLight(0xffd6a2,1.5);scene.add(sun);scene.add(sun.target);
 if(Q.shadows){sun.castShadow=true;const s=sun.shadow;s.mapSize.set(2048,2048);s.camera.left=-110;s.camera.right=110;s.camera.top=110;s.camera.bottom=-110;
   s.camera.near=20;s.camera.far=520;s.bias=-0.0004;s.normalBias=0.5;}
 function sunFollow(x,z){const gx=Math.round(x/6)*6,gz=Math.round(z/6)*6;sun.position.set(gx+SUN.x*260,SUN.y*260,gz+SUN.z*260);sun.target.position.set(gx,0,gz);sun.target.updateMatrixWorld();}
 sunFollow(0,0);
 
 const MAXA=Math.min(8,renderer.capabilities.getMaxAnisotropy());
+// canvas textures are painted in sRGB: WebGL2 decodes them in hardware (sRGB storage), WebGL1 in the shader
+const HWSRGB=renderer.capabilities.isWebGL2;
+function srgbTex(t){if(HWSRGB)t.internalFormat='SRGB8_ALPHA8';else t.encoding=T.sRGBEncoding;return t;}
 function tex(w,h,draw,rep){const c=document.createElement('canvas');c.width=w;c.height=h;draw(c.getContext('2d'),w,h);
-  const t=new T.CanvasTexture(c);if(rep)t.wrapS=t.wrapT=T.RepeatWrapping;t.anisotropy=MAXA;return t;}
+  const t=new T.CanvasTexture(c);if(rep)t.wrapS=t.wrapT=T.RepeatWrapping;t.anisotropy=MAXA;return srgbTex(t);}
 function noise(g,w,h,n,a,x0,y0){x0=x0||0;y0=y0||0;for(let k=0;k<n;k++){g.fillStyle='rgba('+(rnd()<.5?'0,0,0,':'255,255,255,')+(rnd()*a).toFixed(3)+')';
   g.fillRect(x0+rnd()*w,y0+rnd()*h,1+rnd()*2,1+rnd()*2);}}
 const L=o=>new T.MeshLambertMaterial(o);
@@ -70,12 +84,19 @@ function quad(mat,a,b,c,d,nx,ny,nz,u1,v1){const B=bat(mat,a[0],a[2]),k=B.p.lengt
 function flat(mat,x0,z0,x1,z1,y,rep){const nx=Math.max(1,Math.ceil((x1-x0)/160)),nz=Math.max(1,Math.ceil((z1-z0)/160));
   for(let i=0;i<nx;i++)for(let j=0;j<nz;j++){const a=lerp(x0,x1,i/nx),b=lerp(x0,x1,(i+1)/nx),c=lerp(z0,z1,j/nz),d=lerp(z0,z1,(j+1)/nz);
     quad(mat,[a,y,d],[b,y,d],[b,y,c],[a,y,c],0,1,0,(b-a)/rep,(d-c)/rep);}}
-// vertex-coloured quad in a chunk batch; uv = atlas rectangle (u0,v0)-(u1,v1) when the material is textured
-function quadC(mat,a,b,c,d,nx,ny,nz,col,u0,v0,u1,v1){const B=bat(mat,a[0],a[2]),k=B.p.length/3,r=(col>>16&255)/255,g=(col>>8&255)/255,bl=(col&255)/255;
+// vertex-coloured quad in a chunk batch; uv = atlas rectangle (u0,v0)-(u1,v1) when the material is textured.
+// kb and kt darken the first two and the last two vertices (baked ambient occlusion, linear factors).
+function quadV(mat,a,b,c,d,nx,ny,nz,col,u0,v0,u1,v1,kb,kt){const B=bat(mat,a[0],a[2]),k=B.p.length/3,r=LIN[col>>16&255],g=LIN[col>>8&255],bl=LIN[col&255];
   B.p.push(a[0],a[1],a[2],b[0],b[1],b[2],c[0],c[1],c[2],d[0],d[1],d[2]);
-  B.n.push(nx,ny,nz,nx,ny,nz,nx,ny,nz,nx,ny,nz);B.c.push(r,g,bl,r,g,bl,r,g,bl,r,g,bl);
+  B.n.push(nx,ny,nz,nx,ny,nz,nx,ny,nz,nx,ny,nz);B.c.push(r*kb,g*kb,bl*kb,r*kb,g*kb,bl*kb,r*kt,g*kt,bl*kt,r*kt,g*kt,bl*kt);
   if(B.uv){if(mat.map&&u0!==undefined)B.u.push(u0,v0,u1,v0,u1,v1,u0,v1);else B.u.push(WU,WV,WU,WV,WU,WV,WU,WV);}
   B.i.push(k,k+1,k+2,k,k+2,k+3);}
+// Low vertical faces that stand on the ground (fences, plinths, low walls: a and b at the foot, c and d at the top) darken
+// towards the ground. Building walls get their foot shade from the facade atlas instead, which costs no geometry.
+const AOK=.6;
+function quadC(mat,a,b,c,d,nx,ny,nz,col,u0,v0,u1,v1){const h=c[1]-a[1];
+  if(ny<.05&&ny>-.05&&a[1]<=.35&&a[1]===b[1]&&c[1]===d[1]&&h>=.4&&h<1.8&&mat.userData.chunk)return quadV(mat,a,b,c,d,nx,ny,nz,col,u0,v0,u1,v1,AOK+(1-AOK)*(h-.4)/1.4*.5,1);
+  quadV(mat,a,b,c,d,nx,ny,nz,col,u0,v0,u1,v1,1,1);}
 // vertex-coloured box with its base at y (no bottom face); top can take its own colour
 function boxC(mat,x,y,z,w,h,d,col,top,skip){const x0=x-w/2,x1=x+w/2,y1=y+h,z0=z-d/2,z1=z+d/2,cs=shade(col,.93);
   if(skip!==1)quadC(mat,[x0,y,z1],[x1,y,z1],[x1,y1,z1],[x0,y1,z1],0,0,1,col);if(skip!==0)quadC(mat,[x1,y,z0],[x0,y,z0],[x0,y1,z0],[x1,y1,z0],0,0,-1,col);
@@ -84,7 +105,7 @@ function boxC(mat,x,y,z,w,h,d,col,top,skip){const x0=x-w/2,x1=x+w/2,y1=y+h,z0=z-
 // append any BufferGeometry, transformed, with one colour (multiplied by the geometry's own vertex colours if present)
 const _m4=new T.Matrix4(),_n3=new T.Matrix3(),_v=new T.Vector3(),_q=new T.Quaternion(),_e=new T.Euler(),_s=new T.Vector3(),_p=new T.Vector3();
 function pushGeo(mat,geo,m4,col){_n3.getNormalMatrix(m4);const P=geo.attributes.position,N=geo.attributes.normal,U=geo.attributes.uv,Cc=geo.attributes.color,ix=geo.index;
-  _v.setFromMatrixPosition(m4);const B=bat(mat,_v.x,_v.z),k=B.p.length/3,r=(col>>16&255)/255,g=(col>>8&255)/255,bl=(col&255)/255,tx=B.uv,own=!!mat.map&&!!U;
+  _v.setFromMatrixPosition(m4);const B=bat(mat,_v.x,_v.z),k=B.p.length/3,r=LIN[col>>16&255],g=LIN[col>>8&255],bl=LIN[col&255],tx=B.uv,own=!!mat.map&&!!U;
   for(let i=0;i<P.count;i++){_v.fromBufferAttribute(P,i).applyMatrix4(m4);B.p.push(_v.x,_v.y,_v.z);_v.fromBufferAttribute(N,i).applyMatrix3(_n3).normalize();B.n.push(_v.x,_v.y,_v.z);
     if(Cc)B.c.push(r*Cc.getX(i),g*Cc.getY(i),bl*Cc.getZ(i));else B.c.push(r,g,bl);if(tx){if(own)B.u.push(U.getX(i),U.getY(i));else B.u.push(WU,WV);}}
   if(ix)for(let i=0;i<ix.count;i++)B.i.push(k+ix.getX(i));else for(let i=0;i<P.count;i++)B.i.push(k+i);}
