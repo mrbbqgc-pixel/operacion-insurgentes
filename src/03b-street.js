@@ -17,9 +17,15 @@
    for(const s of [-1,0,1])for(let q=0;q<4;q++){const t0=q/4,t1=(q+1)/4,sag=t=>8.15-1.1*4*t*(1-t)*.45,ox=A[2]?s:0,oz=A[2]?0:s;
      pts.push(lerp(A[0],B[0],t0)+ox,sag(t0),lerp(A[1],B[1],t0)+oz,lerp(A[0],B[0],t1)+ox,sag(t1),lerp(A[1],B[1],t1)+oz);}}
  const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(pts,3));const ln=new T.LineSegments(g,new T.LineBasicMaterial({color:0x2b2621}));ln.frustumCulled=false;scene.add(ln);}
-{ // black plastic water tanks on the roofs
- const b=new GB(),k=0x1d1c1a;b.add(GEO.tube8,0,0,0,0,0,0,.56,1.0,.56,k);b.add(GEO.coneO,0,1,0,0,0,0,.56,.34,.56,0x262422);
- bake(b.build(),M.flat,tinacos,(o,p)=>o.position.set(p[0],p[1],p[2]));}
+GEO.cone6o=new T.ConeGeometry(1,1,6,1,true);GEO.cone6o.translate(0,.5,0);
+{ // water tanks on the roofs: mostly black plastic, some older grey ones, a few up on a steel stand
+ const tank=(k,k2)=>{const b=new GB();b.add(GEO.tube6,0,0,0,0,0,0,.56,1.0,.56,k);b.add(GEO.cone6o,0,1,0,0,0,0,.56,.34,.56,k2);return b;};
+ const st=tank(0x1d1c1a,0x262422);for(const q of [[-.4,-.4],[.4,-.4],[-.4,.4],[.4,.4]])st.add(GEO.rod3,q[0],-.9,q[1],0,0,0,.03,.95,.03,0x5a5f61);st.add(GEO.box,0,-.06,0,0,0,0,1.1,.06,1.1,0x5a5f61);
+ const kinds=[tank(0x1d1c1a,0x262422).build(),tank(0x9a9890,0xb0aea6).build(),st.build()];
+ kinds.forEach((g,ki)=>bake(g,M.flat,tinacos.filter((t,k)=>(k%9<6?0:k%9<8?1:2)===ki),(o,p,k)=>{o.position.set(p[0],p[1]+(ki===2?.9:0),p[2]);const s=.85+(k%4)*.09;o.scale.set(s,s,s);}));}
+// grime: every vertical surface darkens towards the ground (dust, splashes, scuffs); done once over the baked batches
+chunks.forEach(mm=>mm.forEach((b,mat)=>{if(mat!==M.wall)return;const p=b.p,n=b.n,c=b.c;
+  for(let i=0,v=0;i<p.length;i+=3,v++){const y=p[i+1];if(y>3.3)continue;const ny=n[i+1];if(ny>.6||ny<-.6)continue;const f=.74+.26*clamp((y-PADY)/3.2,0,1);c[i]*=f;c[i+1]*=f;c[i+2]*=f;}}));
 // explosive barrels and fuel pumps are separate objects so they can be destroyed
 {const pts=[];for(const q of [[0,0],[.4,0],[.42,.03],[.42,.36],[.44,.38],[.42,.4],[.42,.74],[.44,.76],[.42,.78],[.42,1.12],[.4,1.15],[.34,1.15],[.34,1.12],[0,1.12]])pts.push(new T.Vector2(q[0],q[1]));
  const barrelGeo=new T.LatheGeometry(pts,12),barrelMat=L({color:0xb3261e});

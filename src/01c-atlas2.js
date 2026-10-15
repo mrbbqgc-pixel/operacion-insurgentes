@@ -28,6 +28,29 @@ cell('adWall',g=>{stucco(g);g.fillStyle='#f6f1e4';g.fillRect(14,60,228,120);g.fi
   g.fillStyle='#1d3f7a';g.font='900 34px "Arial Narrow",Arial,sans-serif';g.fillText('REFRESCOS',128,146,206);noise(g,228,120,300,.1,14,60);keep(g,14,60,228,120);});
 cell('tomb',g=>{g.fillStyle='#d9d5cb';g.fillRect(0,0,256,256);noise(g,256,256,1500,.07);g.strokeStyle='rgba(70,65,55,.5)';g.lineWidth=5;g.strokeRect(14,14,228,228);
   g.fillStyle='rgba(60,55,45,.55)';g.fillRect(118,50,20,130);g.fillRect(86,84,84,20);keep(g,0,0,256,256);});
+// decals: small boards, graffiti tags, street signs, rust and cardboard; each is a sub-rectangle of one cell (see DUV)
+cell('decals',g=>{stucco(g);const txt=(t,x,y,fs,col,w)=>{g.fillStyle=col;g.font='900 '+fs+'px "Arial Narrow",Arial,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(t,x,y,w);};
+  // row 0: SE VENDE / SE RENTA boards (no phone numbers: the signs are generic)
+  for(const b of [[0,'SE VENDE','#b3261e'],[128,'SE RENTA','#1d3f7a']]){g.fillStyle='#f6f1e4';g.fillRect(b[0]+4,4,120,56);g.strokeStyle=b[2];g.lineWidth=3;g.strokeRect(b[0]+8,8,112,48);txt(b[1],b[0]+64,25,30,b[2],104);
+    g.fillStyle=b[2];g.fillRect(b[0]+24,42,80,3);g.fillRect(b[0]+34,48,60,2);keep(g,b[0]+4,4,120,56);}
+  // row 1: two abstract tags, dark paint on a dado band (left) and on cinder block (right)
+  g.fillStyle='rgba(40,30,22,.2)';g.fillRect(0,64,128,64);g.fillStyle='#c9c6bf';g.fillRect(128,64,128,64);noise(g,128,64,300,.07,128,64);g.strokeStyle='rgba(60,55,48,.42)';g.lineWidth=1.4;
+  for(let r=0;r<5;r++){const y=64+r*12.8;g.beginPath();g.moveTo(128,y);g.lineTo(256,y);g.stroke();for(let x=128+(r%2)*12.8;x<256;x+=25.6){g.beginPath();g.moveTo(x,y);g.lineTo(x,y+12.8);g.stroke();}}
+  for(const t of [[0,'rgba(22,18,16,.88)'],[128,'rgba(120,24,36,.85)']]){g.strokeStyle=t[1];g.lineWidth=6;g.lineCap='round';g.lineJoin='round';g.beginPath();let x=t[0]+14,y=100;g.moveTo(x,y);
+    for(let k=0;k<6;k++){const nx=t[0]+20+k*18+rr(-4,4),ny=rr(74,118);g.quadraticCurveTo(x+rr(-10,14),k%2?72:120,nx,ny);x=nx;y=ny;}g.stroke();g.lineWidth=2.5;g.beginPath();g.moveTo(t[0]+16,112);g.lineTo(t[0]+112,84);g.stroke();}
+  // row 2: ALTO, TOPE, PARADA and NO ESTACIONARSE signs (64 px each)
+  g.fillStyle='#b3261e';g.beginPath();for(let k=0;k<8;k++){const a=k*PI/4+PI/8;g.lineTo(32+29*Math.cos(a),160+29*Math.sin(a));}g.closePath();g.fill();g.strokeStyle='#f6f1e4';g.lineWidth=2;g.stroke();txt('ALTO',32,160,20,'#f6f1e4',46);
+  g.fillStyle='#e2b93b';g.beginPath();g.moveTo(96,132);g.lineTo(124,160);g.lineTo(96,188);g.lineTo(68,160);g.closePath();g.fill();g.strokeStyle='#15110c';g.lineWidth=2;g.stroke();
+  g.fillStyle='#15110c';for(const q of [84,96,108]){g.beginPath();g.arc(q,160,5,PI,0);g.fill();}g.fillRect(78,160,36,2);txt('TOPE',96,174,11,'#15110c',30);
+  g.fillStyle='#1d3f7a';g.fillRect(132,132,56,56);g.fillStyle='#f6f1e4';g.fillRect(142,146,36,20);g.fillStyle='#1d3f7a';g.fillRect(146,150,12,8);g.fillRect(162,150,12,8);g.fillStyle='#f6f1e4';g.beginPath();g.arc(150,168,4,0,7);g.arc(170,168,4,0,7);g.fill();txt('PARADA',160,180,11,'#f6f1e4',50);
+  g.fillStyle='#f6f1e4';g.fillRect(196,132,56,56);g.strokeStyle='#b3261e';g.lineWidth=5;g.beginPath();g.arc(224,160,22,0,7);g.stroke();txt('E',224,161,30,'#15110c',30);g.beginPath();g.moveTo(208,176);g.lineTo(240,144);g.stroke();
+  keep(g,4,132,248,56);
+  // row 3: rust streaks on plaster (tinted), a cardboard box face and an ABIERTO sign
+  for(let k=0;k<7;k++){const x=rr(4,92),gr=g.createLinearGradient(0,192,0,256);gr.addColorStop(0,'rgba(150,80,30,.5)');gr.addColorStop(1,'rgba(150,80,30,0)');g.fillStyle=gr;g.fillRect(x,192,rr(2,7),64);}
+  g.fillStyle='#b48a5a';g.fillRect(96,192,64,64);noise(g,64,64,160,.08,96,192);g.fillStyle='rgba(60,40,20,.35)';g.fillRect(96,222,64,3);g.fillStyle='rgba(230,220,200,.5)';g.fillRect(124,192,8,64);txt('FRÁGIL',128,208,10,'rgba(50,30,15,.6)',50);
+  g.fillStyle='#f6f1e4';g.fillRect(164,196,88,56);g.strokeStyle='#1f5d3a';g.lineWidth=3;g.strokeRect(168,200,80,48);txt('ABIERTO',208,224,24,'#1f5d3a',72);keep(g,96,192,156,64);});
+// atlas rectangle of a pixel sub-rectangle of cell ci (same order as cuv: u0, v0 at the bottom, u1, v1 at the top)
+function subUV(ci,x,y,w,h){const cx=(ci%8)*AC_,cy=Math.floor(ci/8)*AC_;return[(cx+x+.6)/AS,1-(cy+y+h-.6)/AS,(cx+x+w-.6)/AS,1-(cy+y+.6)/AS];}
 // shop signs: 4 strips of 256 x 64 px (4 m x 1 m) per cell
 const shopSigns=[['ABARROTES','#b3261e'],['TORTILLERÍA','#1f5d3a'],['TAQUERÍA','#b3261e'],['FERRETERÍA','#1d3f7a'],['FARMACIA','#1f5d3a'],['LLANTERA','#15110c'],['AGROQUÍMICOS','#1f5d3a'],['REFACCIONES','#1d3f7a'],
   ['PALETERÍA','#b03a73'],['CARNICERÍA','#b3261e'],['MARISCOS','#1d3f7a'],['TALLER MECÁNICO','#15110c'],['PANADERÍA','#8a4b12'],['PAPELERÍA','#1d3f7a'],['LONCHERÍA','#b3261e'],['MINI SÚPER','#1f5d3a'],
@@ -39,6 +62,8 @@ function signUV(k){const c=cuv(signCell0+(k>>2)),j=k&3,vh=(c[3]-c[1])/4;return[c
 ag.fillStyle='#fff';ag.fillRect(0,AS-24,24,24); // white texel for plain vertex-coloured geometry (see WU, WV)
 const ATLAS=new T.CanvasTexture(atlasC);ATLAS.anisotropy=MAXA;
 const CI=CELL_IX;
+const DUV={vende:subUV(CI.decals,4,4,120,56),renta:subUV(CI.decals,132,4,120,56),tag:subUV(CI.decals,2,66,124,60),tagB:subUV(CI.decals,130,66,124,60),alto:subUV(CI.decals,4,132,56,56),
+  tope:subUV(CI.decals,68,132,56,56),parada:subUV(CI.decals,132,132,56,56),noE:subUV(CI.decals,196,132,56,56),rust:subUV(CI.decals,0,192,96,64),box:subUV(CI.decals,96,192,64,64),abierto:subUV(CI.decals,164,196,88,56)};
 
 // ---------- materials
 function ground(col,n,a,extra,sz){sz=sz||128;return L({polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1,

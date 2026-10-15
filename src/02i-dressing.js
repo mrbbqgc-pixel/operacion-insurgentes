@@ -49,7 +49,7 @@ park(-6.4,486,false,C.olive,'pickup');park(6.6,500,false,C.olive,'pickup');
 [[5.4,404],[-6.8,352],[6.2,160],[-5.8,118],[6.4,-118],[-6,-164],[5.6,-236],[-6.6,-402],[6,-562],[-5.8,-640],[6,-760]].forEach(c=>park(c[0],c[1],false));
 [[58,2.9],[118,-3.1],[206,2.7],[330,-2.9],[452,3],[610,-3]].forEach(c=>park(c[0],c[1],true));
 for(const B of BLOCKS){if(!B.kept||kept[bkey(B)]!==1)continue;
-  if(rnd()<.2)park(B.cx-B.w/2-2.4,B.cz+rr(-B.d/3,B.d/3),false);if(rnd()<.24)park(B.cx+rr(-B.w/3,B.w/3),B.cz+B.d/2+2.4,true);if(B.w>60&&rnd()<.1)park(B.cx+rr(-B.w/3,B.w/3),B.cz-B.d/2-2.4,true);
+  if(rnd()<.17)park(B.cx-B.w/2-2.4,B.cz+rr(-B.d/3,B.d/3),false);if(rnd()<.2)park(B.cx+rr(-B.w/3,B.w/3),B.cz+B.d/2+2.4,true);if(B.w>60&&rnd()<.08)park(B.cx+rr(-B.w/3,B.w/3),B.cz-B.d/2-2.4,true);
   if(Math.abs(B.cx+34)<1&&rnd()<.5)park(-8.6,B.cz+rr(-14,14),false);}
 barrelSpots.push([9.4,333],[-9.6,-15.5],[44,4.8],[-9.4,-252],[9.4,-362],[26,-484.6],[186,-614],[238,-652],[9.6,240]);
 // power lines: along the Loreto highway, the road north, and a few streets
@@ -57,3 +57,38 @@ for(let x=30;x<=1300;x+=45)poles.push([x,7.8,0]);for(let z=-1300;z<-970;z+=45)po
 for(const z of [-180,-360,-480,-720])for(let x=-340;x<=920;x+=48){if(Math.abs(x)<16)continue;let ok=true;for(const a of AX)if(Math.abs(x-a)<8)ok=false;if(ok&&blockAt(x,z-10))poles.push([x,z-7.2,0]);}
 // spawn points: every street intersection
 const SPN=[];for(const x of AX)for(const z of SZALL)if(blockAt(x+12,z-12)||blockAt(x-12,z+12))SPN.push([x,z]);
+
+// ---------- street detail: topes, zebra crossings, yellow kerbs, repaired asphalt, sand drifts, drain grates, bus shelters, vendor carts
+M.patch=M.asphalt.clone();M.patch.color.set(0x7e7b78);M.patch.polygonOffsetFactor=M.patch.polygonOffsetUnits=-2;
+M.sandO=M.sand.clone();M.sandO.polygonOffset=true;M.sandO.polygonOffsetFactor=M.sandO.polygonOffsetUnits=-2;
+// speed bump across both carriageways of the boulevard, yellow stripes, a TOPE sign on each kerb
+function tope(z){for(const x of [-6.5,6.5]){boxC(M.flat,x,.03,z,8,.1,.8,0x3a3835);for(let k=-3;k<=3;k+=2)quadC(M.flat,[x+k-.5,.135,z+.4],[x+k+.5,.135,z+.4],[x+k+.5,.135,z-.4],[x+k-.5,.135,z-.4],0,1,0,0xe2b93b);}
+  for(const s of [-1,1]){const px=s*11.3,pz=z+s*16;anchor(px,pz,()=>{post(px,pz,2.4,.035,0x8c9396,PADY);vq(M.wall,px-.3,pz,px+.3,pz,PADY+1.8,PADY+2.4,0xffffff,DUV.tope,true);});}}
+[180,-70,-388,-590,450].forEach(tope);
+// zebra: stripes run along the street direction; ns = a north-south street
+function zebra(x,z,ns){for(let k=-4;k<=4;k++){const o=k*1.2;if(ns){if(Math.abs(x+o)<3)continue;flat(M.lineW,x+o-.25,z-1.2,x+o+.25,z+1.2,.045,1);}else flat(M.lineW,x-1.2,z+o-.25,x+1.2,z+o+.25,.045,1);}}
+for(const q of [[160,-600],[256,-600],[160,-660],[256,-660],[160,-480]]){zebra(q[0],q[1]-8.5,true);zebra(q[0],q[1]+8.5,true);zebra(q[0]-8.5,q[1],false);zebra(q[0]+8.5,q[1],false);}
+zebra(0,-488.5,true);zebra(0,-471.5,true);zebra(0,-612,true);zebra(0,-588,true);
+// yellow paint on the kerb faces of a block: side 0 N, 1 S, 2 W, 3 E; one or more segments of the face
+function kerbY(B,side,full){const x0=B.cx-B.w/2,x1=B.cx+B.w/2,z0=B.cz-B.d/2,z1=B.cz+B.d/2,o=.012,y=PADY+.004,n=full?1:1+Math.floor(rnd()*2);
+  for(let k=0;k<n;k++){const L=side<2?B.w:B.d,a=full?0:rr(0,L-10),b=full?L:Math.min(L,a+rr(6,16));
+    if(side===3)quad(M.line,[x1+o,0,z0+b],[x1+o,0,z0+a],[x1+o,y,z0+a],[x1+o,y,z0+b],1,0,0,1,1);else if(side===2)quad(M.line,[x0-o,0,z0+a],[x0-o,0,z0+b],[x0-o,y,z0+b],[x0-o,y,z0+a],-1,0,0,1,1);
+    else if(side===1)quad(M.line,[x0+a,0,z1+o],[x0+b,0,z1+o],[x0+b,y,z1+o],[x0+a,y,z1+o],0,0,1,1,1);else quad(M.line,[x0+b,0,z0-o],[x0+a,0,z0-o],[x0+a,y,z0-o],[x0+b,y,z0-o],0,0,-1,1,1);}}
+// drain grate in the gutter at a block corner (cx, cz is the corner, sx/sz which way the street lies)
+function grate(cx,cz,sx,sz){const x=cx+sx*.5,z=cz+sz*1.2,y=.034;quadC(M.flat,[x-.25,y,z+.45],[x+.25,y,z+.45],[x+.25,y,z-.45],[x-.25,y,z-.45],0,1,0,0x2b2926);
+  for(let k=-1;k<=1;k++)quadC(M.flat,[x-.2,y+.003,z+k*.25+.04],[x+.2,y+.003,z+k*.25+.04],[x+.2,y+.003,z+k*.25-.04],[x-.2,y+.003,z+k*.25-.04],0,1,0,0x6f6b66);}
+// sand drift: a sloping tongue of sand from the kerb top out into a dirt street (side as in kerbY)
+function drift(B,side){const L=side<2?B.w:B.d,a=rr(2,L-14),len=rr(5,12),w=rr(.6,1.5),x0=B.cx-B.w/2,x1=B.cx+B.w/2,z0=B.cz-B.d/2,z1=B.cz+B.d/2,yi=PADY+.006,yo=.028;
+  if(side===3)quad(M.sandO,[x1-.3,yi,z0+a],[x1-.3,yi,z0+a+len],[x1+w,yo,z0+a+len],[x1+w,yo,z0+a],.1,1,0,len/6,1);else if(side===2)quad(M.sandO,[x0+.3,yi,z0+a+len],[x0+.3,yi,z0+a],[x0-w,yo,z0+a],[x0-w,yo,z0+a+len],-.1,1,0,len/6,1);
+  else if(side===1)quad(M.sandO,[x0+a+len,yi,z1-.3],[x0+a,yi,z1-.3],[x0+a,yo,z1+w],[x0+a+len,yo,z1+w],0,1,.1,len/6,1);else quad(M.sandO,[x0+a,yi,z0+.3],[x0+a+len,yi,z0+.3],[x0+a+len,yo,z0-w],[x0+a,yo,z0-w],0,1,-.1,len/6,1);}
+function asphaltPatch(x,z){flat(M.patch,x-rr(.8,2.4),z-rr(.8,2.4),x+rr(.8,2.4),z+rr(.8,2.4),.042,10);}
+for(let k=0;k<44;k++)asphaltPatch(pick([-6.5,6.5])+rr(-2.5,2.5),rr(-890,770));
+for(let k=0;k<16;k++)asphaltPatch(160+rr(-4,4),rr(-720,-12));for(let k=0;k<6;k++)asphaltPatch(256+rr(-4,4),rr(-720,-540));for(let k=0;k<10;k++)asphaltPatch(rr(60,350),-600+rr(-4,4));for(let k=0;k<6;k++)asphaltPatch(rr(14,160),-480+rr(-4,4));
+for(const B of BLOCKS){if(!B.kept||kept[bkey(B)]!==1)continue;const key=bkey(B),v=sup(B.cx,B.cz),plaza=key==='208,-630',near=Math.abs(B.cx-208)<100&&Math.abs(B.cz+630)<70;
+  if(plaza){for(let s=0;s<4;s++)kerbY(B,s,true);for(const q of [[-1,-1],[1,-1],[-1,1],[1,1]])grate(B.cx+q[0]*B.w/2,B.cz+q[1]*B.d/2,q[0],-q[1]);continue;}
+  if(Math.abs(B.cx)<40&&B.cz<0&&B.cz>-760){if(rnd()<.6)kerbY(B,B.cx<0?3:2,false);if(rnd()<.4)grate(B.cx<0?B.cx+B.w/2:B.cx-B.w/2,B.cz+(rnd()<.5?-B.d/2:B.d/2),B.cx<0?1:-1,0);}
+  else if(near){for(let s=0;s<4;s++)if(rnd()<.4)kerbY(B,s,false);if(rnd()<.5)grate(B.cx+(rnd()<.5?-1:1)*B.w/2,B.cz-B.d/2,0,-1);}
+  if(v>.45&&!SPECIAL[key]){const n=1+Math.floor(rnd()*3);for(let k=0;k<n;k++){const s=Math.floor(rnd()*4);if(Math.abs(B.cx)<40&&(s===(B.cx<0?3:2)))continue;drift(B,s);}}}
+shelter(-11.4,-450,false,1);shelter(11.4,-248,false,-1);shelter(-11.4,122,false,1);shelter(11.4,-700,false,-1);
+for(const q of [[173,-612,.4],[243,-648,2.8],[173,-648,1.9],[243,-612,-.5],[208,-609.5,0],[198,-651,PI],[-11.4,-120,0],[11.4,-215,PI],[-11.4,-560,0],[11.4,-690,PI],[-11.4,150,0],[11.4,-30,PI],[-11.4,-330,0]])
+  if(roomFor(q[0],q[1],1.9,1.9))cart(q[0],q[1],q[2]);
