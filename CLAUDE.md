@@ -1,5 +1,7 @@
 # Operación Insurgentes
 
+Project status, history and unfinished work: `docs/STATUS.md`.
+
 A browser first-person shooter set in Ciudad Insurgentes, Baja California Sur. One page, three.js r128, no framework.
 It is played mostly on phones (iPhone Safari first), so every change is checked at phone size as well as desktop.
 
